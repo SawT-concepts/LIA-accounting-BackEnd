@@ -57,6 +57,7 @@ class SchoolConfig (models.Model):
     def __str__(self):
         return f'{self.school} config'
 
+
 class Class(models.Model):
     name = models.CharField(max_length=50)
     next_class_to_be_promoted_to = models.ForeignKey("Main.Class",on_delete=models.SET_NULL, null=True)

@@ -59,6 +59,10 @@ class GetStudentInfo (APIView):
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
+class GetSchoolStatus (APIView):
+    '''This is responsible for getting information about the school'''
+
 class GetUserPaymentStatus(APIView):
     '''This API is responsible for getting the student's payment status'''
 
