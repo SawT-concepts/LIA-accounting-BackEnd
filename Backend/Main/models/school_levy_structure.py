@@ -104,8 +104,6 @@ class UniformAndBooksFeeCategory (models.Model):
     name = models.CharField(max_length=50)
     image = models.ImageField()
     category = models.ForeignKey("Main.FeesCategory", on_delete=models.CASCADE) 
-    grades = models.ManyToManyField("Main.Class")
-    school = models.ForeignKey("Main.School", on_delete=models.CASCADE)
     is_recommended = models.BooleanField(default=False)
     description = models.TextField(blank=True)
 

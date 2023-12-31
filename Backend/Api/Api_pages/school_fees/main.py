@@ -99,7 +99,7 @@ class GetSchoolFeesBreakDownCharges (APIView):
         try:
             student = get_student_id_from_request(student_id)
             school = student.school
-            current_term = SchoolConfig.objects.get(school=school)
+            current_term = SchoolConfig.objects.get(school=school).term
             grade = student.grade
 
             fees_category = FeesCategory.objects.get(
@@ -136,7 +136,7 @@ class GetUniformAndBookFeeBreakDownCharges (APIView):
                 grades=grade, category=fees_category)
 
             serializer = UniformAndBookFeeCategorySerializer(
-                uniform_fees_category)
+                uniform_fees_category, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -163,7 +163,7 @@ class GetBusFeeBreakDownCharges (APIView):
                 category=fees_category
             )
 
-            serializer = BusFeeCategorySerializer(bus_fee_category)
+            serializer = BusFeeCategorySerializer(bus_fee_category, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -189,7 +189,7 @@ class GetOtherPaymentBreakDownCharges (APIView):
             other_fee_category = OtherFeeCategory.objects.filter(
                 category=fees_category, grades=grade
             )
-            serializer = OtherFeeCategorySerializer(other_fee_category)
+            serializer = OtherFeeCategorySerializer(other_fee_category, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
