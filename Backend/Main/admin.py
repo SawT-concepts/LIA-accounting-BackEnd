@@ -10,6 +10,7 @@ from .models import (
     Staff,
     Payroll,
     Taxroll,
+    Student
 )
 
 # Register your models here.
@@ -24,3 +25,4 @@ admin.site.register(Staff_type)
 admin.site.register(Staff)
 admin.site.register(Payroll)
 admin.site.register(Taxroll)
+admin.site.register(Student)
