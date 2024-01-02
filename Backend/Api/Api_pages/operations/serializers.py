@@ -189,11 +189,12 @@ class GradeSerializer (serializers.ModelSerializer):
         fields = ("name", "id")
 
 class StudentSerializer(serializers.ModelSerializer):
-    grade = serializers.CharField(source='grade.name', read_only=True)
+    grade_id = serializers.IntegerField(source='grade.id', read_only=True)
+    grade_name = serializers.CharField(source='grade.name', read_only=True)
 
     class Meta:
         model = Student
-        fields = ("first_name", "last_name", "other_names", "registration_number", "student_id", "grade", "id")
+        fields = ("first_name", "last_name", "other_names", "registration_number", "student_id", "grade_id", "grade_name", "id")
 
 
 class StudentPaymentStatusDetailSerializer (serializers.ModelSerializer):
