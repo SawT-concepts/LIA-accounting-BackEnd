@@ -18,7 +18,8 @@ from .models import (
     SchoolFeesCategory,
     OtherFeeCategory,
     FeesCategory,
-    SchoolConfig
+    SchoolConfig,
+    PaymentStatus
 )
 
 # Register your models here.
@@ -41,3 +42,4 @@ admin.site.register(UniformAndBooksFeeCategory)
 admin.site.register(OtherFeeCategory)
 admin.site.register(FeesCategory)
 admin.site.register(SchoolConfig)
+admin.site.register(PaymentStatus)

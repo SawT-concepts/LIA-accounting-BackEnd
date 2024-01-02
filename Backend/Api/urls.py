@@ -84,7 +84,7 @@ urlpatterns = [
     # school fees payment
     path('payment/get_token', LoginPaymentPortal.as_view(), name='get payement token'), # ✅
     path('payment/get_student_info/<str:student_id>', GetStudentInfo.as_view(), name='get student info'), # ✅
-    path("payment/get_use_payment_status/<str:student_id>", GetUserPaymentStatus.as_view(), name='get_use_payment_status'), #
+    path("payment/get_use_payment_status/<str:student_id>", GetUserPaymentStatus.as_view(), name='get_use_payment_status'), #add signals here
     
 ]
 

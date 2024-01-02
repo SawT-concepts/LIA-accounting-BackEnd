@@ -155,7 +155,7 @@ class StudentSerializer (serializers.ModelSerializer):
 class PaymentStatusSerializer (serializers.ModelSerializer):
     class Meta:
         model = PaymentStatus
-        fields = ("status", "amount_in_debt", "amount_outstanding ")
+        fields = ("status", "amount_in_debt", "amount_outstanding")
 
 
 class SchoolFeeCategorySerializer (serializers.ModelSerializer):
