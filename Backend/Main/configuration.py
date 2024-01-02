@@ -1,7 +1,7 @@
 school_terms = (
-    ('FIRST_TERM', 'FIRST_TERM'),
-    ('SECOND_TERM', 'SECOND_TERM'),
-    ('THIRD_TERM', 'THIRD_TERM')
+    ('FIRST TERM', 'FIRST TERM'),
+    ('SECOND TERM', 'SECOND TERM'),
+    ('THIRD TERM', 'THIRD TERM')
 )
 
 
