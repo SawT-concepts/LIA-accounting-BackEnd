@@ -188,11 +188,12 @@ class GradeSerializer (serializers.ModelSerializer):
         model = Class 
         fields = ("name", "id")
 
-class StudentSerializer (serializers.ModelSerializer):
+class StudentSerializer(serializers.ModelSerializer):
+    grade = serializers.CharField(source='grade.name', read_only=True)
 
     class Meta:
         model = Student
-        fields = ("first_name", "last_name", "other_names", "registration_number", "student_id", "grade" ,"id")
+        fields = ("first_name", "last_name", "other_names", "registration_number", "student_id", "grade", "id")
 
 
 class StudentPaymentStatusDetailSerializer (serializers.ModelSerializer):
