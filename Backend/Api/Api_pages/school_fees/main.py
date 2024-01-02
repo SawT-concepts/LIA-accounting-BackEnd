@@ -1,3 +1,4 @@
+from turtle import st
 from django.utils import timezone
 from django.shortcuts import render
 from rest_framework.response import Response
@@ -18,6 +19,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import APIException
 from Paystack.transfers import *
+from django.http import Http404
 #! i haven't configured this file with the URL.py
 
 class LoginPaymentPortal(APIView):
@@ -30,21 +32,20 @@ class LoginPaymentPortal(APIView):
             registration_number = request.data.get('registration_number')
             student_instance = get_object_or_404(
                 Student, registration_number=registration_number)
-            return Response({"token": student_instance.id}, status=status.HTTP_200_OK)
+            return Response({"token": student_instance.student_id}, status=status.HTTP_200_OK)
 
-        except ObjectDoesNotExist:
+        except Http404:
             return Response({"message": "A student with that registration number does not exist!"}, status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
 class GetStudentInfo (APIView):
     '''This API gets information about the student... first name, last name etc'''
 
-    def get(self, request):
-        student_id = request.META.get('STUDENT_ID')
-
+    def get(self, request, student_id):
+        print(student_id)
+        
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
 
