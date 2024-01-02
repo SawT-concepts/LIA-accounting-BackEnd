@@ -22,6 +22,7 @@ from Paystack.transfers import *
 from django.http import Http404
 #! i haven't configured this file with the URL.py
 
+
 class LoginPaymentPortal(APIView):
     '''
     This API is responsible for collecting user information and logging them in if their credentials are correct.
@@ -40,12 +41,12 @@ class LoginPaymentPortal(APIView):
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class GetStudentInfo (APIView):
     '''This API gets information about the student... first name, last name etc'''
 
     def get(self, request, student_id):
 
-        
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -55,7 +56,6 @@ class GetStudentInfo (APIView):
             serializer = StudentSerializer(student)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
 
         except Http404:
             return Response({"message": "A student with that registration number does not exist!"}, status=status.HTTP_404_NOT_FOUND)
@@ -64,16 +64,35 @@ class GetStudentInfo (APIView):
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
 class GetSchoolStatus (APIView):
-    '''This is responsible for getting information about the school'''
+    '''This is responsible for getting information about the school. stuffs like school current term and academic status'''
+
+    def get(self, request, student_id):
+
+        if not student_id:
+            return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Assuming you have a utility function to retrieve a student by ID
+            student = get_student_id_from_request(student_id)
+            school_config = SchoolConfig.objects.get(school=student.school)
+
+            serializer = SchoolConfigSerializer(school_config)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Http404:
+            return Response({"message": "A student with that registration number does not exist!"}, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class GetUserPaymentStatus(APIView):
     '''This API is responsible for getting the student's payment status'''
 
     def get(self, request, student_id):
         # Extract student ID from request headers
-        
+
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -193,7 +212,8 @@ class GetOtherPaymentBreakDownCharges (APIView):
             other_fee_category = OtherFeeCategory.objects.filter(
                 category=fees_category, grades=grade
             )
-            serializer = OtherFeeCategorySerializer(other_fee_category, many=True)
+            serializer = OtherFeeCategorySerializer(
+                other_fee_category, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -229,7 +249,6 @@ class ProcessFeePayment(APIView):
                 breakdowns=breakdown
             )
             return Response({"message": "Payment history created successfully"}, status=status.HTTP_200_OK)
-        
 
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -238,16 +257,16 @@ class ProcessFeePayment(APIView):
 class MakePaymentFromHistory (APIView):
     '''This api is responsible for initiating a transaction to paystack'''
 
-    def post (self, request):
+    def post(self, request):
         pass
 
 
 class VerifyAndUpdatePayment(APIView):
     '''This api is responsible for verifying and updating the payment. It updates the student payment status too on the server'''
 
-    def post (self, request):
+    def post(self, request):
         reference = request.data.get('REFRENCE')
 
         # payment_info = verify_payment(reference)
 
-        #if payment_info.status is successful then update the student payment status
+        # if payment_info.status is successful then update the student payment status

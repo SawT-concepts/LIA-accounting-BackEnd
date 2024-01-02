@@ -228,7 +228,7 @@ class CreateStudentSerializer (serializers.ModelSerializer):
 class SchoolConfigSerializer (serializers.ModelSerializer):
 
     class Meta:
-        models = SchoolConfig
+        model = SchoolConfig
         fields = ("term", "academic_session", "id")
 
 
