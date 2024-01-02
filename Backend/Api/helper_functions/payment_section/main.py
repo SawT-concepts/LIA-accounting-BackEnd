@@ -6,7 +6,7 @@ from django.db.models import Sum
 from collections import Counter
 
 def get_student_id_from_request (payload):
-    student = get_object_or_404(Student, student_id=payload)
+    student = get_object_or_404(Student, id=payload)
     return student
 
 
