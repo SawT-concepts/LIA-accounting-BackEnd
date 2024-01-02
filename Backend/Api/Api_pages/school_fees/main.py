@@ -55,6 +55,10 @@ class GetStudentInfo (APIView):
             serializer = StudentSerializer(student)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
+        
+
+        except Http404:
+            return Response({"message": "A student with that registration number does not exist!"}, status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -67,10 +71,9 @@ class GetSchoolStatus (APIView):
 class GetUserPaymentStatus(APIView):
     '''This API is responsible for getting the student's payment status'''
 
-    def get(self, request):
+    def get(self, request, student_id):
         # Extract student ID from request headers
-        student_id = request.META.get('STUDENT_ID')
-
+        
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
 
