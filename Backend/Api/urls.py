@@ -71,7 +71,7 @@ urlpatterns = [
 
     # directors transfers
     path('approve_transfer/<str:transaction_id>',
-         ApproveTransfer.as_view(), name='approve_transfer'),
+         ApproveTransfer.as_view(), name='approve_transfer'), 
 
 
     # head teacher
@@ -81,12 +81,10 @@ urlpatterns = [
          HeadTeacherModifyTransaction.as_view(), name='head_teacher_modify_transaction'),
 
 
-
-
     # school fees payment
-    path('payment/get_token', LoginPaymentPortal.as_view(), name='get payement token'),
-    path('payment/get_student_info', GetStudentInfo.as_view(), name='get student info'),
-
+    path('payment/get_token', LoginPaymentPortal.as_view(), name='get payement token'), # ✅
+    path('payment/get_student_info/<str:student_id>', GetStudentInfo.as_view(), name='get student info'), # ✅
+    
 ]
 
 if DEBUG:
