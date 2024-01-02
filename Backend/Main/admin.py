@@ -1,3 +1,4 @@
+from pyclbr import Class
 from django.contrib import admin
 from .models import (
     School,
@@ -10,7 +11,14 @@ from .models import (
     Staff,
     Payroll,
     Taxroll,
-    Student
+    Class,
+    Student,
+    BusFeeCategory,
+    UniformAndBooksFeeCategory,
+    SchoolFeesCategory,
+    OtherFeeCategory,
+    FeesCategory,
+    SchoolConfig
 )
 
 # Register your models here.
@@ -26,3 +34,10 @@ admin.site.register(Staff)
 admin.site.register(Payroll)
 admin.site.register(Taxroll)
 admin.site.register(Student)
+admin.site.register(Class)
+admin.site.register(SchoolFeesCategory)
+admin.site.register(BusFeeCategory)
+admin.site.register(UniformAndBooksFeeCategory)
+admin.site.register(OtherFeeCategory)
+admin.site.register(FeesCategory)
+admin.site.register(SchoolConfig)
