@@ -44,7 +44,7 @@ class GetStudentInfo (APIView):
     '''This API gets information about the student... first name, last name etc'''
 
     def get(self, request, student_id):
-        print(student_id)
+
         
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
