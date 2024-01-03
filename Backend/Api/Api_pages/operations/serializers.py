@@ -161,16 +161,17 @@ class PaymentStatusSerializer (serializers.ModelSerializer):
 class SchoolFeeCategorySerializer (serializers.ModelSerializer):
     class Meta:
         model = SchoolFeesCategory
-        fields = ("name", "minimum_percentage", "is_compoulsry", "amount")
+        fields = ("name", "minimum_percentage", "is_compoulslry", "amount")
 
 
 class UniformAndBookFeeCategorySerializer (serializers.ModelSerializer):
     class Meta:
         model = UniformAndBooksFeeCategory
-        fields = ("name", "minimum_percentage", "is_compoulsry", "amount", "description")
+        fields = ("name", "minimum_percentage",
+                  "is_compoulsry", "amount", "description")
 
 
-class BusFeeCategorySerializer (serializers.ModelSerializer): 
+class BusFeeCategorySerializer (serializers.ModelSerializer):
     class Meta:
         model = BusFeeCategory
         fields = ("name", "morning_bus_fee", "evening_bus_fee")
@@ -179,14 +180,16 @@ class BusFeeCategorySerializer (serializers.ModelSerializer):
 class OtherFeeCategorySerializer (serializers.ModelSerializer):
     class Meta:
         model = OtherFeeCategory
-        fields = ("name", "minimum_percentage", "is_compoulsry", "amount", "description")
+        fields = ("name", "minimum_percentage",
+                  "is_compoulsry", "amount", "description")
 
 
 class GradeSerializer (serializers.ModelSerializer):
 
     class Meta:
-        model = Class 
+        model = Class
         fields = ("name", "id")
+
 
 class StudentSerializer(serializers.ModelSerializer):
     grade_id = serializers.IntegerField(source='grade.id', read_only=True)
@@ -194,7 +197,8 @@ class StudentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Student
-        fields = ("first_name", "last_name", "other_names", "registration_number", "student_id", "grade_id", "grade_name", "id")
+        fields = ("first_name", "last_name", "other_names",
+                  "registration_number", "student_id", "grade_id", "grade_name", "id")
 
 
 class StudentPaymentStatusDetailSerializer (serializers.ModelSerializer):
@@ -208,7 +212,7 @@ class PaymentHistorySerializer (serializers.ModelSerializer):
 
     class Meta:
         model = PaymentHistory
-        fields = ( "name", "amount_debited", "date_time_initiated", "id" )
+        fields = ("name", "amount_debited", "date_time_initiated", "id")
 
 
 class PaymentHistoryDetailSerializer (serializers.ModelSerializer):
@@ -222,7 +226,8 @@ class CreateStudentSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Student
-        fields = ("first_name", "last_name", "other_names", "registration_number", "grade", "is_active")
+        fields = ("first_name", "last_name", "other_names",
+                  "registration_number", "grade", "is_active")
 
 
 class SchoolConfigSerializer (serializers.ModelSerializer):
@@ -237,21 +242,23 @@ class SchoolFeesCategorySerializer(serializers.ModelSerializer):
         model = SchoolFeesCategory
         fields = '__all__'
 
+
 class BusFeeCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = BusFeeCategory
         fields = '__all__'
+
 
 class UniformAndBooksFeeCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = UniformAndBooksFeeCategory
         fields = '__all__'
 
+
 class OtherFeeCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = OtherFeeCategory
         fields = '__all__'
-
 
     class PaymentHistorySerializer (serializers.ModelSerializer):
 
@@ -267,7 +274,8 @@ class CreateClassSerializer (serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['next_class_to_be_promoted_to'] = self.to_representation(instance.next_class_to_be_promoted_to)
+        representation['next_class_to_be_promoted_to'] = self.to_representation(
+            instance.next_class_to_be_promoted_to)
         return representation
 
 
@@ -276,7 +284,9 @@ class PayrollDetailSerializer (serializers.ModelSerializer):
         model = Payroll
         fields = '__all__'
 
+
 class LevyAnalyticsSerializer (serializers.ModelSerializer):
     class Meta:
         model = SchoolLevyAnalytics
-        fields = ("percentage_paid", "percentage_of_student_in_debt", "percentage_of_student_outstanding")
+        fields = ("percentage_paid", "percentage_of_student_in_debt",
+                  "percentage_of_student_outstanding")
