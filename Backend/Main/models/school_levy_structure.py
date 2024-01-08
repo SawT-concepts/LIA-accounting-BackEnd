@@ -5,7 +5,6 @@ from Main.models.school_operations_models import Student
 from Main.configuration import *
 
 
-  
 """
 Django models for handling various fee categories in a school management system.
 
@@ -58,24 +57,24 @@ Django models for handling various fee categories in a school management system.
    - amount: BigIntegerField for the amount.
 """
 
+
 class FeesCategory (models.Model):
 
     school = models.OneToOneField("Main.School", on_delete=models.CASCADE)
     grade = models.ForeignKey("Main.Class", on_delete=models.CASCADE)
-    name =  models.CharField(max_length=50)
     category_type = models.CharField(max_length=60, choices=category_types)
 
     def __str__(self):
-        return self.name
-    
-#todo: function to manually create all these stuffs as class is being created
-#todo: automatically create tuition fee 
+        return f'{self.category_type} for {self.grade} in {self.school}'
+
+# todo: function to manually create all these stuffs as class is being created
+# todo: automatically create tuition fee
+
 
 class SchoolFeesCategory (models.Model):
     name = models.CharField(max_length=50)
     category = models.ForeignKey("Main.FeesCategory", on_delete=models.CASCADE)
     term = models.CharField(max_length=50, choices=school_terms)
-
 
     '''financials'''
     minimum_percentage = models.BigIntegerField(default=0)
@@ -84,7 +83,6 @@ class SchoolFeesCategory (models.Model):
 
     def __str__(self):
         return f'{self.name} school fee category for {self.category} in {self.category.grade} for {self.term}'
-
 
 
 class BusFeeCategory (models.Model):
@@ -99,11 +97,10 @@ class BusFeeCategory (models.Model):
         return f'{self.name} bus fee category for {self.category} in {self.category.grade} for {self.term}'
 
 
-
 class UniformAndBooksFeeCategory (models.Model):
     name = models.CharField(max_length=50)
     image = models.ImageField()
-    category = models.ForeignKey("Main.FeesCategory", on_delete=models.CASCADE) 
+    category = models.ForeignKey("Main.FeesCategory", on_delete=models.CASCADE)
     is_recommended = models.BooleanField(default=False)
     description = models.TextField(blank=True)
 
@@ -114,13 +111,12 @@ class UniformAndBooksFeeCategory (models.Model):
 
     def __str__(self):
         return f'{self.name} uniform fee category for {self.school}'
-    
 
 
 class OtherFeeCategory (models.Model):
     name = models.CharField(max_length=50)
     image = models.ImageField()
-    category = models.ForeignKey("Main.FeesCategory", on_delete=models.CASCADE) 
+    category = models.ForeignKey("Main.FeesCategory", on_delete=models.CASCADE)
     grades = models.ManyToManyField("Main.Class")
     school = models.ForeignKey("Main.School", on_delete=models.CASCADE)
     is_compoulslry = models.BooleanField(default=False)
@@ -131,7 +127,6 @@ class OtherFeeCategory (models.Model):
 
     def __str__(self):
         return f'{self.name} bus fee category for {self.school}'
-    
 
 
 class SchoolLevyAnalytics(models.Model):
@@ -141,8 +136,8 @@ class SchoolLevyAnalytics(models.Model):
     amount_outstanding = models.BigIntegerField(default=0, null=True)
     percentage_paid = models.IntegerField(default=0, null=True)
     percentage_of_student_in_debt = models.IntegerField(default=0, null=True)
-    percentage_of_student_outstanding = models.IntegerField(default=0, null=True)
-
+    percentage_of_student_outstanding = models.IntegerField(
+        default=0, null=True)
 
     def __str__(self) -> string:
         return f'{self.school} levy analytics'
@@ -182,11 +177,9 @@ class SchoolLevyAnalytics(models.Model):
         self.amount_outstanding = amount_outstanding
         self.save()
 
-    
     def reset_levy_record(self):
         self.amount_paid = 0
         self.save()
-    
 
     def update_percentage_summary(self) -> None:
         """
@@ -218,8 +211,11 @@ class SchoolLevyAnalytics(models.Model):
 
         # Calculate percentages only if there are students
         if total_number_of_students > 0:
-            self.percentage_paid = (students_paid / total_number_of_students) * 100
-            self.percentage_of_student_in_debt = (students_in_debt / total_number_of_students) * 100
-            self.percentage_of_student_outstanding = (students_outstanding / total_number_of_students) * 100
+            self.percentage_paid = (
+                students_paid / total_number_of_students) * 100
+            self.percentage_of_student_in_debt = (
+                students_in_debt / total_number_of_students) * 100
+            self.percentage_of_student_outstanding = (
+                students_outstanding / total_number_of_students) * 100
 
         self.save()
