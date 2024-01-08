@@ -1,8 +1,6 @@
-from email.policy import default
-from unicodedata import category
+
 import uuid
 from django.db import models
-from django.forms import CharField
 from Main.models.school_levy_structure import FeesCategory, OtherFeeCategory, SchoolFeesCategory
 from Main.model_function.helper import *
 from Paystack.service import *
@@ -191,7 +189,7 @@ class Student (models.Model):
                 amount += fee.amount
 
         
-        other_fees = OtherFeeCategory.objects.filter(term=term, category=category_types[0][0])
+        other_fees = OtherFeeCategory.objects.filter(category=fee_category)
 
         for fee in other_fees:
             if fee.is_compoulslry:
