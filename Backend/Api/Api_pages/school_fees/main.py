@@ -36,7 +36,7 @@ class LoginPaymentPortal(APIView):
             return Response({"token": student_instance.student_id}, status=status.HTTP_200_OK)
 
         except Http404:
-            return Response({"message": "A student with that registration number does not exist!"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Wrong Input"}, status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -250,6 +250,7 @@ class ProcessFeePayment(APIView):
                 payment_status="PENDING",
                 breakdowns=breakdown
             )
+            payment_history.save()
             return Response({"message": "Payment history created successfully"}, status=status.HTTP_200_OK)
 
         except Exception as e:

@@ -71,7 +71,7 @@ urlpatterns = [
 
     # directors transfers
     path('approve_transfer/<str:transaction_id>',
-         ApproveTransfer.as_view(), name='approve_transfer'), 
+         ApproveTransfer.as_view(), name='approve_transfer'),
 
 
     # head teacher
@@ -82,13 +82,18 @@ urlpatterns = [
 
 
     # school fees payment
-    path('payment/get_token', LoginPaymentPortal.as_view(), name='get payement token'), # ✅
-    path('payment/get_student_info/<str:student_id>', GetStudentInfo.as_view(), name='get student info'), # ✅
-    path("payment/get_use_payment_status/<str:student_id>", GetUserPaymentStatus.as_view(), name='get_use_payment_status'), #add signals here
-    path("payment/get_school_config/<str:student_id>", GetSchoolStatus.as_view(), name='get_school_config'), # # ✅
-    path("payment/get_school_fees_breakdown/<str:student_id>", GetSchoolFeesBreakDownCharges.as_view(), name='get_school_fees_Breakdown'), #
+    path('payment/get_token', LoginPaymentPortal.as_view(),
+         name='get payement token'),  # ✅
+    path('payment/get_student_info/<str:student_id>',
+         GetStudentInfo.as_view(), name='get student info'),  # ✅
+    path("payment/get_use_payment_status/<str:student_id>",
+         GetUserPaymentStatus.as_view(), name='get_use_payment_status'),  # add signals here
+    path("payment/get_school_config/<str:student_id>",
+         GetSchoolStatus.as_view(), name='get_school_config'),  # ✅
+    path("payment/get_school_fees_breakdown/<str:student_id>",
+         GetSchoolFeesBreakDownCharges.as_view(), name='get_school_fees_Breakdown'),
 
-    
+
 ]
 
 if DEBUG:
