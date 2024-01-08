@@ -6,4 +6,8 @@ class MainConfig(AppConfig):
     name = 'Main'
 
     def ready(self):
-        import Main.signals.student_signals
+        import Main.signals.grade_signals, Main.signals.student_signals
+
+
+
+

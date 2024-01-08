@@ -60,9 +60,10 @@ Django models for handling various fee categories in a school management system.
 
 class FeesCategory (models.Model):
 
-    school = models.OneToOneField("Main.School", on_delete=models.CASCADE)
+    school = models.ForeignKey("Main.School", on_delete=models.CASCADE)
     grade = models.ForeignKey("Main.Class", on_delete=models.CASCADE)
     category_type = models.CharField(max_length=60, choices=category_types)
+
 
     def __str__(self):
         return f'{self.category_type} for {self.grade} in {self.school}'

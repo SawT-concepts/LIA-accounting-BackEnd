@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from django.core.cache import cache
 from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
-from Main.models import Operations_account, Operations_account_transaction_record, Staff, Payroll
+from Main.models import Staff, Payroll
 from Api.helper_functions.main import *
 from Api.helper_functions.auth_methods import *
 from Api.Api_pages.operations.serializers import *
