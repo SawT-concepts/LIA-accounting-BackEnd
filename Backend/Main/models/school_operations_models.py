@@ -1,13 +1,15 @@
 from email.policy import default
+from unicodedata import category
 import uuid
 from django.db import models
 from django.forms import CharField
+from Main.models.school_levy_structure import FeesCategory, OtherFeeCategory, SchoolFeesCategory
 from Main.model_function.helper import *
 from Paystack.service import *
 from django.core.exceptions import ValidationError
 from Main.configuration import *
 import hashlib
-
+from django.shortcuts import get_object_or_404
 """
 This module defines Django models for managing a school system, including schools, classes, staff types, and staff members.
 
@@ -170,4 +172,29 @@ class Student (models.Model):
     def calculate_basic_amount_in_debt(self):
         '''this function here just calculates the amount in debt for a student. 
         it gets the payment of stuffs in his grade that are compoulsry'''
-        self.grade
+
+        # get the school current term 
+        # find the compoulsry school payment models for that class and term
+        # do the same thing for the other fees too 
+        # then return the value
+        student_class = self.grade
+        amount = 0
+
+        school_config = get_object_or_404(SchoolConfig.objects.select_related('school'), school=self.school)
+        term = school_config.term
+
+        fee_category = FeesCategory.objects.get(grade=student_class, category_type=category_types[0][0])
+        school_fees = SchoolFeesCategory.objects.filter(category=fee_category, term=term)
+
+        for fee in school_fees:
+            if fee.is_compoulslry:
+                amount += fee.amount
+
+        
+        other_fees = OtherFeeCategory.objects.filter(term=term, category=category_types[0][0])
+
+        for fee in other_fees:
+            if fee.is_compoulslry:
+                amount += fee.amount
+
+        return amount
