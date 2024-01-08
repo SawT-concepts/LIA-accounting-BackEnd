@@ -1,8 +1,6 @@
-from email.policy import default
-from unicodedata import category
+
 import uuid
 from django.db import models
-from django.forms import CharField
 from Main.models.school_levy_structure import FeesCategory, OtherFeeCategory, SchoolFeesCategory
 from Main.model_function.helper import *
 from Paystack.service import *
@@ -72,7 +70,7 @@ class Class(models.Model):
     school = models.ForeignKey("Main.School", on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True, null=True)
 
-    #total amount students paid in this class
+    # total amount students paid in this class
     amount_paid = models.BigIntegerField(default=0, null=True)
 
     def __str__(self):
@@ -173,28 +171,29 @@ class Student (models.Model):
         '''this function here just calculates the amount in debt for a student. 
         it gets the payment of stuffs in his grade that are compoulsry'''
 
-        # get the school current term 
+        # get the school current term
         # find the compoulsry school payment models for that class and term
-        # do the same thing for the other fees too 
+        # do the same thing for the other fees too
         # then return the value
         student_class = self.grade
         amount = 0
 
-        school_config = get_object_or_404(SchoolConfig.objects.select_related('school'), school=self.school)
+        school_config = get_object_or_404(
+            SchoolConfig.objects.select_related('school'), school=self.school)
         term = school_config.term
 
-        fee_category = FeesCategory.objects.get(grade=student_class, category_type=category_types[0][0])
-        school_fees = SchoolFeesCategory.objects.filter(category=fee_category, term=term)
+        fee_category = FeesCategory.objects.get(
+            grade=student_class, category_type=category_types[0][0])
+        school_fees = SchoolFeesCategory.objects.filter(
+            category=fee_category, term=term, is_compoulslry=True)
 
         for fee in school_fees:
-            if fee.is_compoulslry:
-                amount += fee.amount
+            amount += fee.amount
 
-        
-        other_fees = OtherFeeCategory.objects.filter(term=term, category=category_types[0][0])
+        other_fees = OtherFeeCategory.objects.filter(
+            category=fee_category, term=term, is_compoulslry=True)
 
         for fee in other_fees:
-            if fee.is_compoulslry:
-                amount += fee.amount
+            amount += fee.amount
 
         return amount

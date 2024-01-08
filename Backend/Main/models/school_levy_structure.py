@@ -1,7 +1,7 @@
 import string
 from django.db import models
 from Main.models.fees_structure_models import PaymentHistory, PaymentStatus
-from Main.models.school_operations_models import Student
+from Main.models.school_operations_models import *
 from Main.configuration import *
 
 
@@ -116,6 +116,7 @@ class UniformAndBooksFeeCategory (models.Model):
 class OtherFeeCategory (models.Model):
     name = models.CharField(max_length=50)
     image = models.ImageField()
+    term = models.CharField(max_length=50, choices=school_terms)
     category = models.ForeignKey("Main.FeesCategory", on_delete=models.CASCADE)
     grades = models.ManyToManyField("Main.Class")
     school = models.ForeignKey("Main.School", on_delete=models.CASCADE)
