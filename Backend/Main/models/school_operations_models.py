@@ -36,6 +36,7 @@ This module defines Django models for managing a school system, including school
 
 """
 
+
 class School(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
@@ -51,32 +52,35 @@ class School(models.Model):
 class SchoolConfig (models.Model):
 
     school = models.OneToOneField("Main.School", on_delete=models.CASCADE)
-    term = models.CharField(default="FIRST TERM", choices=school_terms, max_length=50)
-    academic_session = models.CharField(default="2020/2021", choices=academic_session_choice, max_length=50)
+    term = models.CharField(default="FIRST TERM",
+                            choices=school_terms, max_length=50)
+    academic_session = models.CharField(
+        default="2020/2021", choices=academic_session_choice, max_length=50)
 
     def __str__(self):
         return f'{self.school} config'
 
 
-#update
+# update
 
 class Class(models.Model):
     name = models.CharField(max_length=50)
-    next_class_to_be_promoted_to = models.ForeignKey("Main.Class",on_delete=models.SET_NULL, null=True, blank=True)
+    next_class_to_be_promoted_to = models.ForeignKey(
+        "Main.Class", on_delete=models.SET_NULL, null=True, blank=True)
     school = models.ForeignKey("Main.School", on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True, null=True)
 
+    #total amount students paid in this class
     amount_paid = models.BigIntegerField(default=0, null=True)
 
     def __str__(self):
         return self.name
 
-
-    def reset_amount_paid (self):
+    def reset_amount_paid(self):
         self.amount_paid = 0
         self.save()
 
-    def update_amount_paid (self, updated_amount):
+    def update_amount_paid(self, updated_amount):
         self.amount_paid = updated_amount
         self.save()
 
@@ -124,31 +128,29 @@ class Staff (models.Model):
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
-
-
     def save(self, *args, **kwargs):
         # If paystack_id is not already assigned, generate it.
         if not self.paystack_id:
             paystack_id_generated = generate_paystack_id(instance=self)
-            
+
             # Check if the generated paystack_id is 400 (or any other condition you want).
             if paystack_id_generated['status'] == 400:
-                raise ValidationError(paystack_id_generated['data'])  
-            
-            
+                raise ValidationError(paystack_id_generated['data'])
+
             self.paystack_id = paystack_id_generated['data']
-        
+
         super().save(*args, **kwargs)
 
 
 class Student (models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    other_names = models.CharField( max_length=50)
+    other_names = models.CharField(max_length=50)
     registration_number = models.CharField(max_length=60)
     school = models.ForeignKey("Main.School", on_delete=models.CASCADE)
     grade = models.ForeignKey("Main.Class", on_delete=models.CASCADE)
-    student_id = models.CharField(max_length=128, unique=True, blank=True, null=True, editable=False)
+    student_id = models.CharField(
+        max_length=128, unique=True, blank=True, null=True, editable=False)
     is_active = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
@@ -164,4 +166,8 @@ class Student (models.Model):
 
     def __str__(self):
         return self.first_name + " " + self.last_name
-    
+
+    def calculate_basic_amount_in_debt(self):
+        '''this function here just calculates the amount in debt for a student. 
+        it gets the payment of stuffs in his grade that are compoulsry'''
+        self.grade
