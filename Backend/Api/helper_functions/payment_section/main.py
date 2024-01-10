@@ -34,6 +34,7 @@ def get_payment_summary(students):
         
         # Increment the corresponding count based on payment status
         status_counts[payment_status.status] += 1
+        
 
     # Extract counts for each status
     student_paid = status_counts["COMPLETED"]
