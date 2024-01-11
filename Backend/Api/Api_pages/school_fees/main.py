@@ -132,6 +132,9 @@ class GetSchoolFeesBreakDownCharges (APIView):
 
             school_fees_category = SchoolFeesCategory.objects.filter(
                 term=current_term, category=fees_category)
+            
+
+
 
             serializer = SchoolFeeCategorySerializer(
                 school_fees_category, many=True)
@@ -144,8 +147,7 @@ class GetSchoolFeesBreakDownCharges (APIView):
 class GetUniformAndBookFeeBreakDownCharges (APIView):
     '''This api is responsible for getting the student's uniform fees break down'''
 
-    def get(self, request):
-        student_id = request.META.get('STUDENT_ID')
+    def get(self, request, student_id):
 
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
@@ -159,7 +161,9 @@ class GetUniformAndBookFeeBreakDownCharges (APIView):
 
             uniform_fees_category = UniformAndBooksFeeCategory.objects.filter(
                 grades=grade, category=fees_category)
+            print(uniform_fees_category)
 
+            
             serializer = UniformAndBookFeeCategorySerializer(
                 uniform_fees_category, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)

@@ -7,8 +7,8 @@ school_terms = (
 
 category_types = (
     ("SCHOOL FEES", "SCHOOL FEES"),
-    ("BUS FEES", "BUS FEES"),
     ("UNIFORM, WEARS AND BOOKS", "UNIFORM WEARS AND BOOKS"),
+    ("BUS FEES", "BUS FEES"),
     ("OTHER", "OTHER")
 )
 
@@ -17,7 +17,6 @@ fee_status = (
     ("IN DEBT", "IN DEBT"),
     ("OUTSTANDING", "OUTSTANDING"),
 )
-
 
 
 academic_session_choice = (

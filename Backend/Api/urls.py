@@ -92,6 +92,8 @@ urlpatterns = [
          GetSchoolStatus.as_view(), name='get_school_config'),  # ✅
     path("payment/get_school_fees_breakdown/<str:student_id>",
          GetSchoolFeesBreakDownCharges.as_view(), name='get_school_fees_Breakdown'),
+    path("payment/get_uniform_books_breakdown/<str:student_id>",
+         GetUniformAndBookFeeBreakDownCharges.as_view(), name='get_uniform_books_Breakdown'),
 
 
 ]
