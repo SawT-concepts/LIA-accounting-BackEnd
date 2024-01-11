@@ -7,7 +7,7 @@ school_terms = (
 
 category_types = (
     ("SCHOOL FEES", "SCHOOL FEES"),
-    ("UNIFORM, WEARS AND BOOKS", "UNIFORM WEARS AND BOOKS"),
+    ("UNIFORM WEARS AND BOOKS", "UNIFORM WEARS AND BOOKS"),
     ("BUS FEES", "BUS FEES"),
     ("OTHER", "OTHER")
 )

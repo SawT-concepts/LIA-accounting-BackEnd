@@ -118,7 +118,6 @@ class GetSchoolFeesBreakDownCharges (APIView):
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
 
-
         try:
             student = get_student_id_from_request(student_id)
             school = student.school.id
@@ -132,9 +131,6 @@ class GetSchoolFeesBreakDownCharges (APIView):
 
             school_fees_category = SchoolFeesCategory.objects.filter(
                 term=current_term, category=fees_category)
-            
-
-
 
             serializer = SchoolFeeCategorySerializer(
                 school_fees_category, many=True)
@@ -153,20 +149,31 @@ class GetUniformAndBookFeeBreakDownCharges (APIView):
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             student = get_student_id_from_request(student_id)
-            school = student.school
+            school = student.school.id
             grade = student.grade
 
+
+            print(category_types[1][1])
+            print(school)
+            print(grade)
+
+
             fees_category = FeesCategory.objects.get(
-                school=school, category_type=category_types[1], grade=grade)
+                school=school, category_type=category_types[1][1], grade=grade)
+            
+
+      
 
             uniform_fees_category = UniformAndBooksFeeCategory.objects.filter(
-                grades=grade, category=fees_category)
+              category=fees_category)
+            print("uniform part")
             print(uniform_fees_category)
 
-            
+        
             serializer = UniformAndBookFeeCategorySerializer(
                 uniform_fees_category, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
 
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -216,7 +223,7 @@ class GetOtherPaymentBreakDownCharges (APIView):
                 school=school, category_type=category_types[3], grade=grade)
 
             other_fee_category = OtherFeeCategory.objects.filter(
-                category=fees_category, grades=grade
+                category=fees_category, grade=grade
             )
             serializer = OtherFeeCategorySerializer(
                 other_fee_category, many=True)
