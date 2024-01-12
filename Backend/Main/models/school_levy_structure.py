@@ -111,7 +111,7 @@ class UniformAndBooksFeeCategory (models.Model):
     is_compoulslry = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.name} uniform fee category for {self.school}'
+        return f'{self.name} uniform fee category for {self.category.school}'
 
 
 class OtherFeeCategory (models.Model):
