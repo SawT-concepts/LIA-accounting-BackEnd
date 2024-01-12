@@ -7,7 +7,6 @@ from Api.Api_pages.directors.operations import *
 from Api.Api_pages.main.general import *
 from rest_framework_simplejwt.views import TokenRefreshView
 from Api.Api_pages.school_fees.main import *
-from Backend.settings import DEBUG, STATIC_URL, STATIC_ROOT, MEDIA_URL, MEDIA_ROOT
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
@@ -98,6 +97,4 @@ urlpatterns = [
 
 ]
 
-if DEBUG:
-    urlpatterns += static(STATIC_URL, document_root=STATIC_ROOT)
-    urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)
+
