@@ -189,13 +189,14 @@ class GetBusFeeBreakDownCharges (APIView):
         try:
             student = get_student_id_from_request(student_id)
             school = student.school
+            current_term = SchoolConfig.objects.get(school=school).term
             grade = student.grade
 
             fees_category = FeesCategory.objects.get(
                 school=school, category_type=category_types[2][1], grade=grade)
 
             bus_fee_category = BusFeeCategory.objects.filter(
-                category=fees_category
+                category=fees_category, term=current_term
             )
 
             serializer = BusFeeCategorySerializer(bus_fee_category, many=True)

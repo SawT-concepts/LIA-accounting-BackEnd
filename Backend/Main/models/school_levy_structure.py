@@ -89,6 +89,8 @@ class SchoolFeesCategory (models.Model):
 class BusFeeCategory (models.Model):
     name = models.CharField(max_length=50)
     category = models.ForeignKey("Main.FeesCategory", on_delete=models.CASCADE)
+    term = models.CharField(max_length=50, choices=school_terms)
+
 
     '''financials'''
     morning_bus_fee = models.BigIntegerField(default=0)
