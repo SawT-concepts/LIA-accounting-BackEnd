@@ -93,7 +93,7 @@ urlpatterns = [
          GetSchoolFeesBreakDownCharges.as_view(), name='get_school_fees_Breakdown'),
     path("payment/get_uniform_books_breakdown/<str:student_id>",
          GetUniformAndBookFeeBreakDownCharges.as_view(), name='get_uniform_books_Breakdown'),
-
+     path("payment/get_bus_fee_breakdown/<str:student_id>", GetBusFeeBreakDownCharges.as_view(), name="get_bus_fee_Break_Down"),
 
 ]
 

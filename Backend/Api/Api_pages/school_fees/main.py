@@ -192,7 +192,7 @@ class GetBusFeeBreakDownCharges (APIView):
             grade = student.grade
 
             fees_category = FeesCategory.objects.get(
-                school=school, category_type=category_types[2], grade=grade)
+                school=school, category_type=category_types[2][1], grade=grade)
 
             bus_fee_category = BusFeeCategory.objects.filter(
                 category=fees_category
