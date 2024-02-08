@@ -182,8 +182,7 @@ class GetUniformAndBookFeeBreakDownCharges (APIView):
 class GetBusFeeBreakDownCharges (APIView):
     '''This api is responsible for getting the student's bus fees break down'''
 
-    def get(self, request):
-        student_id = request.META.get('STUDENT_ID')
+    def get(self, request, student_id):
 
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
