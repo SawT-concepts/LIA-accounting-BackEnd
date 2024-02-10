@@ -94,6 +94,8 @@ urlpatterns = [
     path("payment/get_uniform_books_breakdown/<str:student_id>",
          GetUniformAndBookFeeBreakDownCharges.as_view(), name='get_uniform_books_Breakdown'),
      path("payment/get_bus_fee_breakdown/<str:student_id>", GetBusFeeBreakDownCharges.as_view(), name="get_bus_fee_Break_Down"),
+     path("payment/get_other_fee_breakdown/<str:student_id>", GetOtherPaymentBreakDownCharges.as_view(), name="get_other_fee_breakdown"),
+
 
 ]
 
