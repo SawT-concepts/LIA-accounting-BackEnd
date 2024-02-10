@@ -121,16 +121,15 @@ class OtherFeeCategory (models.Model):
     image = models.ImageField()
     term = models.CharField(max_length=50, choices=school_terms)
     category = models.ForeignKey("Main.FeesCategory", on_delete=models.CASCADE)
-    grades = models.ManyToManyField("Main.Class")
-    school = models.ForeignKey("Main.School", on_delete=models.CASCADE)
     is_compoulslry = models.BooleanField(default=False)
     description = models.TextField(blank=True)
 
     '''financials'''
     amount = models.BigIntegerField(default=0)
+    minimum_percentage = models.BigIntegerField(default=0)
 
     def __str__(self):
-        return f'{self.name} bus fee category for {self.school}'
+        return f'{self.name} other fee category for {self.category.school}'
 
 
 class SchoolLevyAnalytics(models.Model):
