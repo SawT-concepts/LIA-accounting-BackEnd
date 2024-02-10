@@ -224,7 +224,7 @@ class GetOtherPaymentBreakDownCharges (APIView):
                 school=school, category_type=category_types[3][1], grade=grade)
 
             other_fee_category = OtherFeeCategory.objects.filter(
-                category=fees_category, grade=grade
+                category=fees_category
             )
             serializer = OtherFeeCategorySerializer(
                 other_fee_category, many=True)
