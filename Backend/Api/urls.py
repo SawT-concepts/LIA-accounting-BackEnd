@@ -9,6 +9,10 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from Api.Api_pages.school_fees.main import *
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
+from Api.Api_pages.school_accountant.main import GetPercentageSummary
+
+
+
 
 router = DefaultRouter()
 router.register('view_create_modify_cash_transaction',
@@ -95,6 +99,12 @@ urlpatterns = [
          GetUniformAndBookFeeBreakDownCharges.as_view(), name='get_uniform_books_Breakdown'),
      path("payment/get_bus_fee_breakdown/<str:student_id>", GetBusFeeBreakDownCharges.as_view(), name="get_bus_fee_Break_Down"),
      path("payment/get_other_fee_breakdown/<str:student_id>", GetOtherPaymentBreakDownCharges.as_view(), name="get_other_fee_breakdown"),
+
+
+
+
+     #school accountant
+     path ('accountant/get_percentage_summary', GetPercentageSummary.as_view(), name="get_percentage_summary")
 
 
 ]

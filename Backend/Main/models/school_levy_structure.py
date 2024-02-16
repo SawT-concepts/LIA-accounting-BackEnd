@@ -132,6 +132,7 @@ class OtherFeeCategory (models.Model):
         return f'{self.name} other fee category for {self.category.school}'
 
 
+#todo Signals on this when school is created
 class SchoolLevyAnalytics(models.Model):
     school = models.OneToOneField("Main.School", on_delete=models.CASCADE)
     amount_paid = models.BigIntegerField(default=0, null=True)
