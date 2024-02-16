@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from Api.Api_pages.school_fees.main import *
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
-from Api.Api_pages.school_accountant.main import GetPercentageSummary
+from Api.Api_pages.school_accountant.main import GetPercentageSummary, GetGraphOfClassPayment 
 
 
 
@@ -104,7 +104,8 @@ urlpatterns = [
 
 
      #school accountant
-     path ('accountant/get_percentage_summary', GetPercentageSummary.as_view(), name="get_percentage_summary")
+     path ('accountant/get_percentage_summary', GetPercentageSummary.as_view(), name="get_percentage_summary"),
+     path ('accountant/get_graph_payment_of_classes', GetGraphOfClassPayment.as_view(), name="get_graph_payment_of_classes"),
 
 
 ]

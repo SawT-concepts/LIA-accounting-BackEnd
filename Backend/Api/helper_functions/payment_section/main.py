@@ -64,8 +64,8 @@ def generate_grade_summary(school):
     Generates a summary for a bar chart showing the amount paid for each grade.
     """
 
-    grades = Class.objects.filter(school=school).values('name', 'amount_paid')
+    grades = Class.objects.filter(school=school).only('name', 'amount_paid')
 
-    result = [{"name": grade['name'], "amount_paid": grade['amount_paid']} for grade in grades]
+    result = [{"name": grade.name, "amount_paid": grade.amount_paid} for grade in grades]
 
     return result

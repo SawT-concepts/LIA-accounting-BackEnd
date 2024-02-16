@@ -121,7 +121,7 @@ class GetPaymentSmmaryByClass (APIView):
             return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
 
 
-class GetGraphOfClassPayment (APIView):
+class GetGraphOfClassPayment(APIView):
     '''This api returns the payment graph of all the graph and how much is being paid'''
 
     def get(self, request):
@@ -130,13 +130,13 @@ class GetGraphOfClassPayment (APIView):
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
-            grades = Class.objects.filter(user_school=user_school)
-            result = generate_grade_summary(grades)
+            result = generate_grade_summary(user_school)
 
             return Response({"data": result}, status=HTTP_200_OK)
-         
+
         except PermissionDenied:
             # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
             return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+
         except Exception as e:
             return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
