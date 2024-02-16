@@ -80,27 +80,22 @@ class EditClass(APIView):
             return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
 
 
-class GetPercentageSummary (APIView):
-    '''This api returns the percentage and the total number of students that have paid fees complete'''
-
+# Assuming SchoolLevyAnalytics serializer has a related field to School model
+class GetPercentageSummary(APIView):
     def get(self, request):
         try:
-            # Check if the authenticated user has the required account type.
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
-            analytics = SchoolLevyAnalytics.objects.get(school=user_school.id)
+            analytics = get_object_or_404(SchoolLevyAnalytics.objects.select_related('school'), school=user_school.id)
 
             serializer = LevyAnalyticsSerializer(analytics)
-
             return Response(serializer.data, status=HTTP_200_OK)
 
         except PermissionDenied:
-            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
             return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
         except Exception as e:
             return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
-
 
 
 class GetPaymentSmmaryByClass (APIView):
