@@ -289,5 +289,4 @@ class PayrollDetailSerializer (serializers.ModelSerializer):
 class LevyAnalyticsSerializer (serializers.ModelSerializer):
     class Meta:
         model = SchoolLevyAnalytics
-        fields = ("percentage_paid", "percentage_of_student_in_debt",
-                  "percentage_of_student_outstanding")
+        fields = "__all__"
