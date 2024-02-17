@@ -107,6 +107,7 @@ class GetPaymentSmmaryByClass (APIView):
             check_account_type(request.user, account_type)
 
             grade = Class.objects.get(id=class_id)
+            print(grade)
 
             students = Student.objects.filter(grade=grade)
 
