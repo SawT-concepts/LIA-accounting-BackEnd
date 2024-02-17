@@ -32,7 +32,7 @@ def get_payment_summary(students):
     for student in students:
         payment_status = PaymentStatus.objects.get(student=student.id)
         
-        # Increment the corresponding count based on payment status
+
         status_counts[payment_status.status] += 1
         
 
