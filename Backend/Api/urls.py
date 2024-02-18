@@ -10,7 +10,7 @@ from Api.Api_pages.school_fees.main import *
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from Api.Api_pages.school_accountant.main import GetPercentageSummary, GetGraphOfClassPayment , GetPaymentSmmaryByClass
-from Api.Api_pages.school_accountant.student_and_class import GetListOfClass
+from Api.Api_pages.school_accountant.student_and_class import GetAllStudents, GetListOfClass
 
 
 
@@ -110,6 +110,7 @@ urlpatterns = [
      path ('accountant/get_payment_summary_by_class/<str:class_id>', GetPaymentSmmaryByClass.as_view(), name="get_payment_summary_by_class"),
 
      path ('accountant/get_classes',  GetListOfClass.as_view(), name="get_classes"),
+     path ('accountant/get_all_students', GetAllStudents.as_view(), name="get_all_students")
 ]
 
 

@@ -18,6 +18,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import APIException
 account_type = "ACCOUNTANT"
+from rest_framework.pagination import PageNumberPagination
+
 
 #! THIS API HAS NO ROUTING!
 class GetListOfClass (APIView):
@@ -37,24 +39,30 @@ class GetListOfClass (APIView):
             return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
 
-class GetAllStudents (APIView):
-    '''This API returns all the students depending on the class arguments passed'''
+
+
+class GetAllStudents(APIView):
     permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
 
     def get(self, request):
-
         try:
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
-
             students = Student.objects.filter(school=user_school, is_active=True)
-            serializer = StudentSerializer(students, many=True)
 
-            return Response(serializer.data, status=HTTP_200_OK)
+            # Apply pagination
+            page = self.paginate_queryset(students)
+            if page is not None:
+                serializer = StudentSerializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = StudentSerializer(students, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class GetStudentDetails (APIView):
