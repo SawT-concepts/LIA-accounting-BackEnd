@@ -177,9 +177,10 @@ class Student (models.Model):
         # then return the value
         student_class = self.grade
         amount = 0
-
+        print(self.school)
         school_config = get_object_or_404(
             SchoolConfig.objects.select_related('school'), school=self.school)
+        
         term = school_config.term
 
         fee_category = FeesCategory.objects.get(

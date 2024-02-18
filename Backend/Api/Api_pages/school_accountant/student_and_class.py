@@ -37,17 +37,18 @@ class GetListOfClass (APIView):
             return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
 
-class GetAllStudentsByClass (APIView):
+class GetAllStudents (APIView):
     '''This API returns all the students depending on the class arguments passed'''
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, grade_id):
+    def get(self, request):
 
         try:
             check_account_type(request.user, account_type)
-            grade = get_object_or_404(Class, id=grade_id)
+            user_school = get_user_school(request.user)
 
-            students = Student.objects.filter(grade=grade.id, is_active=True)
+
+            students = Student.objects.filter(school=user_school, is_active=True)
             serializer = StudentSerializer(students, many=True)
 
             return Response(serializer.data, status=HTTP_200_OK)
