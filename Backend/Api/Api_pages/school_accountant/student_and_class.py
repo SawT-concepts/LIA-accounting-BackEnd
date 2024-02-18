@@ -41,9 +41,14 @@ class GetListOfClass (APIView):
 
 
 
+class PaginationClass(PageNumberPagination):
+     page_size = 2
+
+
 class GetAllStudents(APIView):
     permission_classes = [IsAuthenticated]
-    pagination_class = PageNumberPagination
+    pagination_class = PageNumberPagination()
+
 
     def get(self, request):
         try:
@@ -53,10 +58,10 @@ class GetAllStudents(APIView):
             students = Student.objects.filter(school=user_school, is_active=True)
 
             # Apply pagination
-            page = self.paginate_queryset(students)
+            page = self.pagination_class.paginate_queryset(students, request)
             if page is not None:
                 serializer = StudentSerializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
+                return self.pagination_class.get_paginated_response(serializer.data)
 
             serializer = StudentSerializer(students, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)

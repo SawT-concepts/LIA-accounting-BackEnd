@@ -1,11 +1,11 @@
+from celery.schedules import crontab
+from celery import Celery
 from pathlib import Path
 from datetime import timedelta
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-from celery import Celery
-from celery.schedules import crontab
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    #installed apps
+    # installed apps
     'Authentication',
     'Main',
     'Api',
@@ -79,7 +79,8 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'phqueyhm',  # This is the default database name from your image.
+        # This is the default database name from your image.
+        'NAME': 'phqueyhm',
         'USER': 'phqueyhm',
         'PASSWORD': 'XP69t1p2o3fT_8O1HSWpmNVDT8aEnaxU',  # Make sure this is kept secret!
         'HOST': 'cornelius.db.elephantsql.com',
@@ -87,14 +88,13 @@ DATABASES = {
     }
 }
 
-#caches
+# caches
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": "redis://default:NZpAOkwbhMeiihHhDICi@containers-us-west-90.railway.app:7278",
     }
 }
-
 
 
 # Password validation
@@ -131,7 +131,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-#adding STATIC_ROOT so that any static file in this project can be accessed using
+# adding STATIC_ROOT so that any static file in this project can be accessed using
 # this path
 # i also installed pillow (pip install pillow) for images
 STATIC_URL = 'static/'
@@ -144,30 +144,31 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#cors
+# cors
 ALLOWED_HOSTS = ['*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
 
 CORS_ALLOW_HEADERS = ['*']
-#cors
+# cors
 
 
-#Authentication settings 
+# Authentication settings
 AUTH_USER_MODEL = 'Authentication.CustomUser'
 AUTHENTICATION_BACKENDS = ['Authentication.auth_backend.EmailBackend']
 
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10, 
 }
 
 
-#JWT settings
+# JWT settings
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=50),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=100),
@@ -208,7 +209,7 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
-#will change later
+# will change later
 CELERY_APP = "Background_Tasks"
 CELERY_BROKER_URL = "redis://default:NZpAOkwbhMeiihHhDICi@containers-us-west-90.railway.app:7278"
 CELERY_RESULT_BACKEND = "redis://default:NZpAOkwbhMeiihHhDICi@containers-us-west-90.railway.app:7278"
@@ -220,7 +221,7 @@ EMAIL_HOST = 'localhost'
 EMAIL_PORT = 1025
 
 
-#celery for background task configuration 
+# celery for background task configuration
 #! (Check this later)
 CELERY_BEAT_SCHEDULE = {
     # 'process_trending_topics': {
