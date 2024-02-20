@@ -192,14 +192,20 @@ class GradeSerializer (serializers.ModelSerializer):
         fields = ("name", "id")
 
 
+class PaymentStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentStatus
+        fields = ("status", "amount_in_debt", "amount_outstanding")
+
 class StudentSerializer(serializers.ModelSerializer):
     grade_id = serializers.IntegerField(source='grade.id', read_only=True)
     grade_name = serializers.CharField(source='grade.name', read_only=True)
+    payment_status = PaymentStatusSerializer(source='paymentstatus', read_only=True)
 
     class Meta:
         model = Student
         fields = ("first_name", "last_name", "other_names",
-                  "registration_number", "student_id", "grade_id", "grade_name", "id")
+                  "registration_number", "student_id", "grade_id", "grade_name", "id", "payment_status")
 
 
 class StudentPaymentStatusDetailSerializer (serializers.ModelSerializer):

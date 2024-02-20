@@ -5,6 +5,7 @@ from Main.configuration import *
 class PaymentStatus (models.Model):
     student = models.OneToOneField("Main.Student", on_delete=models.CASCADE)
     status = models.CharField(choices=fee_status, max_length=50, default=fee_status[1][1])
+    last_amount_paid = models.BigIntegerField(default=0)
     amount_in_debt = models.BigIntegerField(default=0)
     amount_outstanding = models.BigIntegerField(default=0)
 
