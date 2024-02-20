@@ -195,7 +195,7 @@ class GradeSerializer (serializers.ModelSerializer):
 class PaymentStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentStatus
-        fields = ("status", "amount_in_debt", "amount_outstanding")
+        fields = ("status", "amount_in_debt", "amount_outstanding", "last_amount_paid")
 
 class StudentSerializer(serializers.ModelSerializer):
     grade_id = serializers.IntegerField(source='grade.id', read_only=True)
