@@ -40,7 +40,7 @@ class GetListOfClass (APIView):
 
 
 
-
+#update
 class PaginationClass(PageNumberPagination):
      page_size = 2
 
