@@ -19,7 +19,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import APIException
 from Paystack.transfers import *
-
+from django.http import Http404
 
 
 class LoginPaymentPortal(APIView):
