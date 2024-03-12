@@ -18,7 +18,7 @@ from Api.Api_pages.operations.serializers import *
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import APIException
-account_type = "SCHOOL_ACCOUNTANT"
+account_type = "ACCOUNTANT"
 
 class GetFinancialInfoForAClass(APIView):
     '''This function returns information about the payment summary for the given class'''
