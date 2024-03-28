@@ -26,7 +26,6 @@ class GetFinancialInfoForAClass(APIView):
 
     def get(self, request, grade_id, term):
         try:
-            # Make sure to replace 'account_type' with the actual account type you are checking
             check_account_type(request.user, account_type)
 
             user_school = get_user_school(request.user)
@@ -57,7 +56,7 @@ class GetFinancialInfoForAClass(APIView):
             return Response(serialized_data, status=HTTP_200_OK)
 
         except FeesCategory.DoesNotExist:
-            return Response({"message": "Fees category not found for the given grade"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Fees category not found for the given grade"}, status=HTTP_400_BAD_REQUEST)
         except PermissionDenied:
             return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
@@ -139,7 +138,7 @@ class CreateOrDeleteBusFeeCategory(APIView):
 
     def post(self, request, category):
         try:
-            # Make sure to replace 'account_type' with the actual account type you are checking
+
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
@@ -180,7 +179,6 @@ class EditBusFeeCategory(APIView):
 
     def patch(self, request, category_id): 
         try:
-            # Make sure to replace 'account_type' with the actual account type you are checking
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
@@ -213,7 +211,6 @@ class CreateOrDeleteUniformAndBooksFeeCategory(APIView):
 
     def post(self, request, category):
         try:
-            # Make sure to replace 'account_type' with the actual account type you are checking
             check_account_type(request.user, 'account_type')
             user_school = get_user_school(request.user)
 
@@ -255,7 +252,6 @@ class EditUniformAndBooksFeeCategory(APIView):
 
     def patch(self, request, category_id):
         try:
-            # Make sure to replace 'account_type' with the actual account type you are checking
             check_account_type(request.user, 'account_type')
             user_school = get_user_school(request.user)
 
