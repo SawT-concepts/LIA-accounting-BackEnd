@@ -1,4 +1,3 @@
-from turtle import st
 from django.utils import timezone
 from django.shortcuts import render
 from rest_framework.response import Response

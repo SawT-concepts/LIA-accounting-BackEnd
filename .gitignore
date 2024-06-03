@@ -19,7 +19,7 @@ media/
 .env
 
 # Dependency directories
-myenv/
+venv/
 .env
 
 # Local development settings
