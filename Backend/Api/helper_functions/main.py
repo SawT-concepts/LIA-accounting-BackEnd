@@ -313,11 +313,18 @@ def get_transaction_summary_by_header(transactions):
     transaction_summary = {}
 
     for transaction in transactions:
-        # Get the particulars object associated with the transaction
-        particulars = transaction.particulars
+        # Ensure transaction has the expected attributes
+        particulars = getattr(transaction, 'particulars', None)
+        amount = getattr(transaction, 'amount', None)
+        
+        if particulars is None or amount is None:
+            raise ValueError("Each transaction must have 'particulars' and 'amount' attributes")
 
         # Get the name of the particulars
-        particulars_name = particulars.name
+        particulars_name = getattr(particulars, 'name', None)
+        
+        if particulars_name is None:
+            raise ValueError("Particulars must have a 'name' attribute")
 
         # Check if a summary for this particulars already exists
         if particulars_name in transaction_summary:
@@ -330,18 +337,21 @@ def get_transaction_summary_by_header(transactions):
             }
 
         # Update the summary for this particulars
-        summary['total_amount'] += transaction.amount
+        summary['total_amount'] += amount
 
         # Update or add the summary to the transaction_summary dictionary
         transaction_summary[particulars_name] = summary
 
-    all_amount = sum(summary['total_amount']
-                     for summary in transaction_summary.values())
+    all_amount = sum(summary['total_amount'] for summary in transaction_summary.values())
 
-    # Calculate the percentage for each particulars
-    for particulars_name, summary in transaction_summary.items():
-        percentage = (summary['total_amount'] / all_amount) * 100
-        summary['percentage'] = percentage
+    # Calculate the percentage for each particulars, handle case where all_amount is zero
+    if all_amount == 0:
+        for summary in transaction_summary.values():
+            summary['percentage'] = 0
+    else:
+        for particulars_name, summary in transaction_summary.items():
+            percentage = (summary['total_amount'] / all_amount) * 100
+            summary['percentage'] = percentage
 
     return transaction_summary
 

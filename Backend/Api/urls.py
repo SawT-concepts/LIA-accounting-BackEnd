@@ -49,7 +49,8 @@ urlpatterns = [
     path('view_cash_transction_summary', GetCashLeftInSafeAndCurrentMonthCashSummary.as_view(
     ), name="View cash transaction summary"),
     path('', include(router.urls)),
-    # path ('get_header_summary', GetPercentageSummary.as_view(), name='get_header_summary'),
+    path ('get_header_summary', GetPercentageSummary.as_view(), name='get_header_summary'),
+    path('get_operations_breakdown', GetParticularsSummary.as_view(), name='get_percentage_breakdown'),
 
 
 

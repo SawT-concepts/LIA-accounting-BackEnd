@@ -66,14 +66,14 @@ class ParticularSerializer (serializers.ModelSerializer):
         model = Particulars
         fields = ('id', 'name')
 
-# class TransactionSummarySerializer(serializers.Serializer):
-#     total_amount = serializers.IntegerField()
-#     percentage = serializers.FloatField()
+class TransactionSummarySerializer(serializers.Serializer):
+    total_amount = serializers.IntegerField()
+    percentage = serializers.FloatField()
 
-# class PercentageSummarySerializer (serializers.Serializer):
-#     particulars = serializers.DictField(
-#         child=TransactionSummarySerializer(many=True)
-#     )
+class PercentageSummarySerializer(serializers.Serializer):
+    particulars_name = serializers.CharField()
+    total_amount = serializers.IntegerField()
+    percentage = serializers.FloatField()
 
 
 class StaffTypeSerializer (serializers.ModelSerializer):

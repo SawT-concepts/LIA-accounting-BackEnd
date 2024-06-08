@@ -273,13 +273,20 @@ class GetIncomeGraph (APIView):
 
 
 
-#  API to get the summary of amount spent in the operatins account for a particular
-# class GetPercentageSummary (APIView):
+# API to get the summary of amount spent in the operatins account for a particular
+class GetParticularsSummary(APIView):
 
-#     def get(self, request):
-#         user_school = get_user_school(request.user)
-#         operations_account_tansaction_list = Operations_account_transaction_record.get_transaction().filter(school=user_school)
+    def get(self, request):
+        user_school = get_user_school(request.user)
+        operations_account_transaction_list = Operations_account_transaction_record.objects.filter(school=user_school)
 
-#         summary = get_transaction_summary_by_header(operations_account_tansaction_list)
-#         serializer = PercentageSummarySerializer(summary, many=True)
-#         return Response(serializer.data, status=HTTP_200_OK)
+        summary_dict = get_transaction_summary_by_header(operations_account_transaction_list)
+        
+        # Convert the summary dictionary to a list of dictionaries suitable for the serializer
+        summary_list = [
+            {'particulars_name': key, **value}
+            for key, value in summary_dict.items()
+        ]
+        
+        serializer = PercentageSummarySerializer(summary_list, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
