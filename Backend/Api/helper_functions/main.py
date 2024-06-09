@@ -356,7 +356,7 @@ def get_transaction_summary_by_header(transactions):
     return transaction_summary
 
 
-def get_cash_left_and_month_summary(school_id, transaction_type=None):
+def  get_cash_left_and_month_summary(school_id, transaction_type=None):
     """
     Retrieves the remaining cash amount and total debit transactions for a given school
     within the current month.
