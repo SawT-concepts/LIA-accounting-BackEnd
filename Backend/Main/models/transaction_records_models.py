@@ -43,7 +43,7 @@ class Operations_account_transaction_record(models.Model):
         max_length=100, blank=False, null=False)
     account_number_of_reciever = models.CharField(
         max_length=20, null=False, blank=True)
-    bank = models.ForeignKey("Paystack.Bank",  on_delete=models.CASCADE)
+    bank = models.ForeignKey("Paystack.Bank",  on_delete=models.CASCADE, null=True)
 
     #paystack
     customer_transaction_id = models.CharField(max_length=50, null=True, blank=True)
