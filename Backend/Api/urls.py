@@ -12,6 +12,7 @@ from rest_framework.routers import DefaultRouter
 from Api.Api_pages.school_accountant.main import GetPercentageSummary, GetGraphOfClassPayment , GetPaymentSmmaryByClass
 from Api.Api_pages.school_accountant.student_and_class import GetAllStudents, GetListOfClass
 from Api.Api_pages.school_accountant.class_fee_settings import GetFinancialInfoForAClass
+from Api.Api_pages.operations.transfers import GetAllTransferTransaction, GetCashLeftInSafeAndCurrentMonthTransferSummary
 
 
 
@@ -52,6 +53,10 @@ urlpatterns = [
     path ('get_header_summary', GetPercentageSummary.as_view(), name='get_header_summary'),
     path('get_operations_breakdown', GetParticularsSummary.as_view(), name='get_percentage_breakdown'),
 
+
+     #transfers
+     path('get_all_transfers_transaction/<str:pending>/', GetAllTransferTransaction.as_view(), name='get_all_transfers_transaction'),
+     path('get_cash_transaction_summary', GetCashLeftInSafeAndCurrentMonthTransferSummary.as_view(), name='get_cash_transaction_summary'),
 
 
     # salaries and staffs
