@@ -11,6 +11,7 @@ from dateutil.relativedelta import relativedelta
 from collections import defaultdict
 from django.db.models import Sum
 from enum import Enum
+from Paystack.models import Bank
 
 
 def check_account_type(user, account_type):
@@ -423,6 +424,19 @@ def get_all_school_header(school_id):
     particulars = Particulars.objects.filter(school=school_id)
     return particulars
 
+
+def get_all_school_ranks (school_id):
+    '''
+        Get all the school ranks available
+    '''
+    ranks = Staff_type.objects.filter(school=school_id)
+    return ranks
+
+
+def get_all_banks ():
+
+    banks = Bank.objects.all()
+    return banks
 
 class OperationType(Enum):
     ADD = "ADD"

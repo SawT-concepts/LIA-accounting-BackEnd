@@ -35,6 +35,9 @@ urlpatterns = [
 
     # genral
     path('fetch_header', FetchHeader.as_view(), name='fetch_header'),
+    path('fetch_school_rank', GetRanks.as_view(), name='fetch_school_rank'),
+    path('fetch_banks', GetBanks.as_view(), name='fetch_banks'),
+    path('verify_account_number', VerifyAccountNumber.as_view(), name='verify_account_number'),
 
     # Operation
     path('get_amount_available_operations_account',

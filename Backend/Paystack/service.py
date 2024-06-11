@@ -22,6 +22,26 @@ def get_banks_from_paystack():
     return response.json()["data"]
 
 
+def resolve_bank_account(account_number, bank_code):
+    '''
+        Verifies a user's bank account
+    '''
+    url = f"https://api.paystack.co/bank/resolve?account_number={account_number}&bank_code={bank_code}"
+    headers = {
+        "Authorization": f"Bearer {SECRET_KEY}"
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        print (response.json()['data'])
+        return response.json()
+    else:
+        return None
+    
+
+
+
 def generate_paystack_id(instance, full_name_present=None):
     '''
     Generate paystack_id_for_staff after verifying the account name and bank.
