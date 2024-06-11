@@ -104,6 +104,7 @@ class StaffReadSerializer (serializers.ModelSerializer):
     class Meta:
         model = Staff
         fields = ('id', 'first_name', 'last_name', 'account_number',
+        fields = ('id', 'first_name', 'last_name', 'account_number',
                   'staff_type', 'salary_deduction')
 
 
