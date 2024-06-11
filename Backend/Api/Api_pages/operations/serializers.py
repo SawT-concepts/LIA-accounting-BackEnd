@@ -2,6 +2,7 @@ from rest_framework import serializers
 from Main.models import *
 from Paystack.models import Bank
 
+
 class OperationsAccountSerializer(serializers.ModelSerializer):
     total_amount_available = serializers.SerializerMethodField()
 
@@ -66,20 +67,24 @@ class ParticularSerializer (serializers.ModelSerializer):
         model = Particulars
         fields = ('id', 'name')
 
+
 class RankSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Staff_type
         fields = ('id', 'basic_salary', 'tax', 'name')
 
+
 class BankSerializer (serializers.ModelSerializer):
     class Meta:
         model = Bank
         fields = ('id', 'name', 'bank_code')
 
+
 class TransactionSummarySerializer(serializers.Serializer):
     total_amount = serializers.IntegerField()
     percentage = serializers.FloatField()
+
 
 class PercentageSummarySerializer(serializers.Serializer):
     particulars_name = serializers.CharField()
@@ -106,8 +111,8 @@ class StaffWriteSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Staff
-        fields = ('id', 'first_name', 'last_name',
-                  'staff_type', 'salary_deduction')
+        fields = ('first_name', 'last_name', 'bank', 'account_number', 'staff_type',
+                  'salary_deduction')
 
 
 class PayrollSerializer (serializers.ModelSerializer):
@@ -206,12 +211,15 @@ class GradeSerializer (serializers.ModelSerializer):
 class PaymentStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentStatus
-        fields = ("status", "amount_in_debt", "amount_outstanding", "last_amount_paid")
+        fields = ("status", "amount_in_debt",
+                  "amount_outstanding", "last_amount_paid")
+
 
 class StudentSerializer(serializers.ModelSerializer):
     grade_id = serializers.IntegerField(source='grade.id', read_only=True)
     grade_name = serializers.CharField(source='grade.name', read_only=True)
-    payment_status = PaymentStatusSerializer(source='paymentstatus', read_only=True)
+    payment_status = PaymentStatusSerializer(
+        source='paymentstatus', read_only=True)
 
     class Meta:
         model = Student

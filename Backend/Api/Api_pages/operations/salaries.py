@@ -76,15 +76,20 @@ class AddAndEditStaff (APIView):
             user_school = get_user_school(request.user)
 
             data = request.data
-            serialized_data = StaffWriteSerializer(data)
+            serialized_data = StaffWriteSerializer(data=data)
+
+            verify_bank_account = resolve_bank_account(serialized_data.account_number, Bank.objects.get(id=serialized_data.bank).bank_code)
+
+            if verify_bank_account is None:
+                
+                return Response({"message": "Bank Account Details not recognized"}, status=HTTP_400_BAD_REQUEST)
 
             if serialized_data.is_valid():
                 serialized_data.save(school=user_school)
 
                 # todo: add notification
-
                 return Response({"message": "Staff created successfully"}, status=HTTP_201_CREATED)
-            return Response(serialized_data.errors, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": "Invalid details provided"}, status=HTTP_400_BAD_REQUEST)
 
         except PermissionDenied:
             # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
