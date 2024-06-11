@@ -11,7 +11,8 @@ account_type = "OPERATIONS"
 
 class FetchHeader(APIView):
     permission_classes = [IsAuthenticated]
-    def get (self, request):
+
+    def get(self, request):
         try:
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
@@ -20,10 +21,71 @@ class FetchHeader(APIView):
 
             serializer = ParticularSerializer(
                 school_header, many=True)
-            
-            return Response (serializer.data)
-            
+
+            return Response(serializer.data)
+
         except PermissionDenied:
             return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
 
+class GetRanks(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            check_account_type(request.user, account_type)
+            user_school = get_user_school(request.user)
+
+            school_ranks = get_all_school_ranks(user_school)
+
+            serializer = RankSerializer(
+                school_ranks, many=True)
+
+            return Response(serializer.data)
+
+        except PermissionDenied:
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+
+
+class GetBanks(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            check_account_type(request.user, account_type)
+
+            school_banks = get_all_banks()
+
+            serializer = BankSerializer(
+                school_banks, many=True)
+
+            return Response(serializer.data)
+
+        except PermissionDenied:
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+
+
+class VerifyAccountNumber (APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            check_account_type(request.user, account_type)
+
+            account_number = request.data['account_number']
+            bank_code = request.data['bank_code']
+
+            if not account_number or not bank_code:
+                return Response({"message": "Account number and bank code are required"}, status=HTTP_400_BAD_REQUEST)
+
+            response = resolve_bank_account(account_number, bank_code)
+
+            if response:
+                return Response({"data": response}, status=HTTP_200_OK)
+            else:
+                return Response({"message": "Invalid account number"}, status=HTTP_400_BAD_REQUEST)
+
+        except PermissionDenied:
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)

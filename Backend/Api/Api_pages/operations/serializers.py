@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from Main.models import *
-
+from Paystack.models import Bank
 
 class OperationsAccountSerializer(serializers.ModelSerializer):
     total_amount_available = serializers.SerializerMethodField()
@@ -66,6 +66,17 @@ class ParticularSerializer (serializers.ModelSerializer):
         model = Particulars
         fields = ('id', 'name')
 
+class RankSerializer (serializers.ModelSerializer):
+
+    class Meta:
+        model = Staff_type
+        fields = ('id', 'basic_salary', 'tax', 'name')
+
+class BankSerializer (serializers.ModelSerializer):
+    class Meta:
+        model = Bank
+        fields = ('id', 'name', 'bank_code')
+
 class TransactionSummarySerializer(serializers.Serializer):
     total_amount = serializers.IntegerField()
     percentage = serializers.FloatField()
@@ -87,7 +98,7 @@ class StaffReadSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Staff
-        fields = ('id', 'first_name', 'last_name',
+        fields = ('id', 'first_name', 'last_name', 'account_number',
                   'staff_type', 'salary_deduction')
 
 
