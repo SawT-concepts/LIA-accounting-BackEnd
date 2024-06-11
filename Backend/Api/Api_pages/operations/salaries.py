@@ -71,20 +71,25 @@ class AddAndEditStaff (APIView):
 
     def post(self, request):
         try:
-            # Check if the authenticated user has the required account type.
+        # Check if the authenticated user has the required account type.
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
             data = request.data
-            serialized_data = StaffWriteSerializer(data=data)
-
-            verify_bank_account = resolve_bank_account(serialized_data.account_number, Bank.objects.get(id=serialized_data.bank).bank_code)
-
-            if verify_bank_account is None:
-                
-                return Response({"message": "Bank Account Details not recognized"}, status=HTTP_400_BAD_REQUEST)
-
+            serialized_data = StaffWriteSerializer(
+                data=data, context={'request': request})
+            print(serialized_data)
             if serialized_data.is_valid():
+                print(serialized_data.validated_data)
+                verify_bank_account = resolve_bank_account(
+                    serialized_data.validated_data['account_number'], serialized_data.validated_data['bank'].bank_code)
+
+                if verify_bank_account is None:
+                    return Response({"message": "Bank Account Details not recognized"}, status=HTTP_400_BAD_REQUEST)
+                
+                
+                print(type(serialized_data.validated_data.get('staff_type')))
+                
                 serialized_data.save(school=user_school)
 
                 # todo: add notification
@@ -265,7 +270,7 @@ class GetAllPayroll (APIView):
         try:
             check_account_type(self.request.user, account_type)
             user_school = get_user_school(self.request.user)
-            payroll_list = Payroll.objects.filter (school=user_school.id)
+            payroll_list = Payroll.objects.filter(school=user_school.id)
 
             serializer = PayrollSerializer(data=payroll_list, many=True)
 
@@ -285,22 +290,21 @@ class GetAllPayroll (APIView):
             return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
 
 
-
 class RequeryFailedPayrollTransaction (APIView):
     '''
         this api is responsible for requerying failed payments
     '''
-    def post (self, request, payroll_id):
-        payroll = get_object_or_404(Payroll, id=payroll_id)
-        
-        staffs_failed = payroll.get_all_failed_staff_payment()
-        #todo:u Initiate bulk transaction and reupdate the staff payment status
 
+    def post(self, request, payroll_id):
+        payroll = get_object_or_404(Payroll, id=payroll_id)
+
+        staffs_failed = payroll.get_all_failed_staff_payment()
+        # todo:u Initiate bulk transaction and reupdate the staff payment status
 
 
 class GetPayrollDetails (APIView):
 
-    def get (self, request, payroll_id):
+    def get(self, request, payroll_id):
         try:
             check_account_type(self.request.user, account_type)
             payroll_instance = get_object_or_404(Payroll, id=payroll_id)
@@ -321,16 +325,8 @@ class GetPayrollDetails (APIView):
             return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
 
 
-
-
-
 class GetInAppAuthentication (APIView):
     '''This is supposed to be for the internal authentication'''
-
-
-
-
-
 
 
 # framework
