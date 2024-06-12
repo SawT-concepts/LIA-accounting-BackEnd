@@ -160,7 +160,7 @@ class PayrollSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Payroll
-        fields = ("name", "date_initiated")
+        fields = ("id", "name", "date_initiated", "staffs")
 
 
 class StudentSerializer (serializers.ModelSerializer):

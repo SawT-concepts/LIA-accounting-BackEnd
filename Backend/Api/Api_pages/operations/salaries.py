@@ -185,9 +185,18 @@ class InitiatePayroll (APIView):
             payroll = Payroll.objects.create(
                 name=payroll_name, school=user_school)
             payroll.add_staff(staff_list)
+
+
+            #delete other payrolls 
+            Payroll.objects.filter(name=payroll_name, school=user_school).delete()
+
             payroll.save()
 
-            return Response({"message": "Payroll initiated successfully"}, status=status.HTTP_201_CREATED)
+            # Serialize the payroll data
+            serializer = PayrollSerializer(payroll)
+
+            return Response({"message": "Payroll initiated successfully", "payroll": serializer.data}, status=status.HTTP_201_CREATED)
+
 
         except PermissionDenied:
             # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
