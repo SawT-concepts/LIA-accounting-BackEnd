@@ -71,7 +71,7 @@ class AddAndEditStaff (APIView):
 
     def post(self, request):
         try:
-        # Check if the authenticated user has the required account type.
+            # Check if the authenticated user has the required account type.
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
@@ -86,10 +86,9 @@ class AddAndEditStaff (APIView):
 
                 if verify_bank_account is None:
                     return Response({"message": "Bank Account Details not recognized"}, status=HTTP_400_BAD_REQUEST)
-                
-                
+
                 print(type(serialized_data.validated_data.get('staff_type')))
-                
+
                 serialized_data.save(school=user_school)
 
                 # todo: add notification
@@ -186,9 +185,9 @@ class InitiatePayroll (APIView):
                 name=payroll_name, school=user_school)
             payroll.add_staff(staff_list)
 
-
-            #delete other payrolls 
-            Payroll.objects.filter(name=payroll_name, school=user_school).delete()
+            # delete other payrolls
+            Payroll.objects.filter(
+                name=payroll_name, school=user_school).delete()
 
             payroll.save()
 
@@ -197,7 +196,6 @@ class InitiatePayroll (APIView):
 
             return Response({"message": "Payroll initiated successfully", "payroll": serializer.data}, status=status.HTTP_201_CREATED)
 
-
         except PermissionDenied:
             # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
             return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
@@ -208,36 +206,42 @@ class InitiatePayroll (APIView):
 
         except Exception as e:
             # For all other exceptions, return a generic error message.
-            return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class InitiateTaxroll (APIView):
-    '''
-        -The Api is responsible for initiating payroll instance
-    '''
+class InitiateTaxroll(APIView):
+    """
+    The API is responsible for initiating payroll instance.
+    """
 
     def post(self, request, payroll_id, *args, **kwargs):
         try:
             check_account_type(request.user, account_type)
-            taxroll_function = Taxroll.generate_taxroll_out_of_payroll(
-                payroll_id)
-            taxroll_instance = taxroll_function['data']
+            user_school = get_user_school(request.user)
 
-            serialized_data = TaxRollReadSerializer(data=taxroll_instance)
-            return Response(serialized_data.data, status=HTTP_200_OK)
+            taxroll_response = Taxroll.generate_taxroll_out_of_payroll(payroll_id, user_school)
+
+            if taxroll_response['status'] == "SUCCESS":
+                taxroll_instance = taxroll_response['data']
+                
+                # Serialize the taxroll_instance
+                serialized_data = TaxRollReadSerializer(taxroll_instance)
+                
+                return Response(serialized_data.data, status=status.HTTP_201_CREATED)
+
+            return Response({"message": taxroll_response['message']}, status=status.HTTP_404_NOT_FOUND if taxroll_response['code'] == "ERROR_404" else status.HTTP_502_BAD_GATEWAY)
 
         except PermissionDenied:
-            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
 
         except APIException as e:
-            # Handle specific API-related errors and return their details.
             return Response({"message": str(e.detail)}, status=e.status_code)
 
         except Exception as e:
-            # For all other exceptions, return a generic error message.
-            return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
+        
 
 class GenerateTransactionSummary (APIView):
     '''this api is responsible for returning a TransactionSummary from an existing payroll transaction'''
@@ -269,7 +273,7 @@ class GenerateTransactionSummary (APIView):
 
         except Exception as e:
             # For all other exceptions, return a generic error message.
-            return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class GetAllPayroll (APIView):
@@ -296,7 +300,7 @@ class GetAllPayroll (APIView):
 
         except Exception as e:
             # For all other exceptions, return a generic error message.
-            return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class RequeryFailedPayrollTransaction (APIView):
@@ -331,7 +335,7 @@ class GetPayrollDetails (APIView):
 
         except Exception as e:
             # For all other exceptions, return a generic error message.
-            return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class GetInAppAuthentication (APIView):

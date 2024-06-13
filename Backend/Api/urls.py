@@ -69,7 +69,7 @@ urlpatterns = [
     path('show_staff_type', ShowStaffType, name='show_staff_type'),  # ✅
     path('initiate_payroll', InitiatePayroll.as_view(),
          name='initiate_payroll'),  # ✅
-    path('generate_taxroll/<str:payroll_id',
+    path('generate_taxroll/<str:payroll_id>',
          InitiateTaxroll.as_view(), name='generate_taxroll'),
     path('get_payroll_summary/<str:payroll_id',
          GenerateTransactionSummary.as_view(), name='get_payroll_summary'),

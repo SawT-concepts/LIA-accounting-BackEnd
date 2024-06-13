@@ -141,7 +141,7 @@ class TransferTransactionWriteSerializer (serializers.ModelSerializer):
 class TaxRollReadSerializer (serializers.ModelSerializer):
 
     class Meta:
-        models = Taxroll
+        model = Taxroll
         fields = "__all__"
 
 

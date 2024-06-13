@@ -5,20 +5,23 @@ from Main.model_function.helper import generate_taxroll_staff_table_out_of_payro
 from datetime import datetime
 
 
+Status = (
+    ("PENDING", "PENDING"),
+    ("INITIALIZED", "INITIALIZED"),
+    ("SUCCESS", "SUCCESS"),
+    ("FAILED", "FAILED"),
+    ("RECONCILIATION", "RECONCILIATION"),
+    ("CANCELLED", "CANCELLED"),
+    ("PARTIAL_SUCCESS", "PARTIAL_SUCCESS"),
+)
+
+
 def get_default_staffs():
     return [{}]
 
 
 class Payroll(models.Model):
-    Status = (
-        ("PENDING", "PENDING"),
-        ("INITIALIZED", "INITIALIZED"),
-        ("SUCCESS", "SUCCESS"),
-        ("FAILED", "FAILED"),
-        ("RECONCILIATION", "RECONCILIATION"),
-        ("CANCELLED", "CANCELLED"),
-        ("PARTIAL_SUCCESS", "PARTIAL_SUCCESS"),
-    )
+
 
     name = models.CharField(max_length=100)
     date_initiated = models.DateTimeField(auto_now_add=True)
@@ -128,6 +131,7 @@ class Taxroll(models.Model):
 
     # Create a one-to-one relationship with the Payroll model
     payroll = models.OneToOneField("Main.Payroll", on_delete=models.CASCADE)
+    school = models.ForeignKey("Main.School", on_delete=models.CASCADE, null=True)
 
     def add_staff(self, staff_data_list):
         if "staffs" not in self.staffs:
@@ -144,36 +148,47 @@ class Taxroll(models.Model):
 
     def __str__(self):
         return self.name
-
     @staticmethod
-    def generate_taxroll_out_of_payroll(payroll_id):
+    def generate_taxroll_out_of_payroll(payroll_id, school):
         try:
-            payroll = Payroll.objects.select_related(
-                'school').get(id=payroll_id)
+            payroll = Payroll.objects.select_related('school').get(id=payroll_id)
             staffs_on_payroll = json.loads(payroll.staffs)
 
             # Generate taxroll staffs from payroll staffs
-            taxroll_staffs = generate_taxroll_staff_table_out_of_payroll(
-                staffs_on_payroll)
+            taxroll_staffs = generate_taxroll_staff_table_out_of_payroll(staffs_on_payroll)
 
             # Create a Taxroll instance
             taxroll_name = f'Taxroll for {payroll.name}'
+            Taxroll.objects.filter(name=taxroll_name, school=school).delete()
+
             taxroll = Taxroll.objects.create(
                 name=taxroll_name,
                 amount_paid_for_tax=payroll.total_amount_for_tax,
-                status=Payroll.Status['Success'],
+                status=Status[2][0],  # Ensure this is the correct way to access the status
                 staffs=taxroll_staffs,
-                payroll=payroll
+                payroll=payroll,
+                school=school
             )
-            taxroll.save()
-            return ({
+
+            print (taxroll)
+            return {
                 "status": "SUCCESS",
                 "data": taxroll
-            })  # Successful generation
+            }
+
         except Payroll.DoesNotExist:
-            return ("ERROR_404")
+            return {
+                "status": "ERROR",
+                "message": "Payroll not found",
+                "code": "ERROR_404"
+            }
+
         except Exception as e:
             print(f"Error generating Taxroll: {str(e)}")
-            return ("ERROR_502")  # Error occurred during generation3
+            return {
+                "status": "ERROR",
+                "message": str(e),
+                "code": "ERROR_502"
+            } # Error occurred during generation3
 
 # gnerate paystacl id for each staffs
