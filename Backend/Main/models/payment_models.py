@@ -58,7 +58,6 @@ class Payroll(models.Model):
         total_tax = sum(staff.get("tax_payable", 0) for staff in staffs_data if isinstance(staff, dict) and "tax_payable" in staff)
         deductions = sum(staff.get("salary_deduction", 0) for staff in staffs_data if isinstance(staff, dict) and "salary_deduction" in staff)
 
-        print(deductions)
         return total_payable_salary + total_tax - deductions
     
 
