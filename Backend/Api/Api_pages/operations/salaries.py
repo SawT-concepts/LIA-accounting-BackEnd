@@ -78,16 +78,15 @@ class AddAndEditStaff (APIView):
             data = request.data
             serialized_data = StaffWriteSerializer(
                 data=data, context={'request': request})
-            print(serialized_data)
+ 
             if serialized_data.is_valid():
-                print(serialized_data.validated_data)
+    
                 verify_bank_account = resolve_bank_account(
                     serialized_data.validated_data['account_number'], serialized_data.validated_data['bank'].bank_code)
 
                 if verify_bank_account is None:
                     return Response({"message": "Bank Account Details not recognized"}, status=HTTP_400_BAD_REQUEST)
 
-                print(type(serialized_data.validated_data.get('staff_type')))
 
                 serialized_data.save(school=user_school)
 
@@ -241,7 +240,7 @@ class InitiateTaxroll(APIView):
             return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-        
+
 
 class GenerateTransactionSummary (APIView):
     '''this api is responsible for returning a TransactionSummary from an existing payroll transaction'''
