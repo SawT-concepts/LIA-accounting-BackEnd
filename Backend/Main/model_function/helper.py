@@ -16,7 +16,7 @@ def generate_taxroll_staff_table_out_of_payroll(staffs_on_payroll):
                 "staff_name": staff_data.get('staff_firstname') + " " + staff_data.get('staff_lastname'),
                 "staff_id": staff_data.get('staff_id'),
                 "rank": staff_data.get('rank'),
-                "tax_payable": staff_data.get('tax'),
+                "tax_payable": staff_data.get('tax_payable'),
                 "basic_salary": staff_data.get('basic_salary'),
                 "Annual_Income": annual_income,
                 "TIN": staff_object.tin_number,
