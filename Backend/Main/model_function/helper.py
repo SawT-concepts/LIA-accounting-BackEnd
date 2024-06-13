@@ -13,7 +13,7 @@ def generate_taxroll_staff_table_out_of_payroll(staffs_on_payroll):
             annual_income = staff_data['basic_salary'] * 12
 
             taxroll_staff = {
-                "staff_name": staff_data.get('staff_name'),
+                "staff_name": staff_data.get('staff_firstname') + " " + staff_data.get('staff_lastname'),
                 "staff_id": staff_data.get('staff_id'),
                 "rank": staff_data.get('rank'),
                 "tax_payable": staff_data.get('tax'),
