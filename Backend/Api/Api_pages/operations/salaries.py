@@ -246,33 +246,36 @@ class GenerateTransactionSummary (APIView):
     '''this api is responsible for returning a TransactionSummary from an existing payroll transaction'''
 
     def get(self, request, payroll_id, *args, **kwargs):
-        try:
-            check_account_type(request.user, account_type)
-            payroll_instance = get_object_or_404(Payroll, id=payroll_id)
-            total_amount_paid = payroll_instance.get_total_salary_paid()
-            total_tax_paid = payroll_instance.get_total_tax_paid()
-            # todo: Add the total transfer list for all the staffs paid (total amount)
+        # try:
+        check_account_type(request.user, account_type)
+        payroll_instance = get_object_or_404(Payroll, id=payroll_id)
+        print(payroll_instance)
+        total_amount_paid = payroll_instance.get_total_salary_paid()
+        total_tax_paid = payroll_instance.get_total_tax_paid()
+        summary = payroll_instance.get_payment_summary()
+        # todo: Add the total transfer list for all the staffs paid (total amount)
 
-            # Create an instance of the serializer with the response data
-            serializer = TransactionSummarySerializer({
-                "amount_paid": total_amount_paid,
-                "total_tax_paid": total_tax_paid
-            })
+        # Create an instance of the serializer with the response data
+        serializer = TransactionSummarySerializer({
+            "amount_paid": total_amount_paid,
+            "total_tax_paid": total_tax_paid,
+            "total_staffs": summary['total_staffs']
+        })
 
-            # Return the serialized data in the response
-            return Response(serializer.data, status=HTTP_200_OK)
+        # Return the serialized data in the response
+        return Response(serializer.data, status=HTTP_200_OK)
 
-        except PermissionDenied:
-            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+        # except PermissionDenied:
+        #     # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
+        #     return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
 
-        except APIException as e:
-            # Handle specific API-related errors and return their details.
-            return Response({"message": str(e.detail)}, status=e.status_code)
+        # except APIException as e:
+        #     # Handle specific API-related errors and return their details.
+        #     return Response({"message": str(e.detail)}, status=e.status_code)
 
-        except Exception as e:
-            # For all other exceptions, return a generic error message.
-            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+        # except Exception as e:
+        #     # For all other exceptions, return a generic error message.
+        #     return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class GetAllPayroll (APIView):

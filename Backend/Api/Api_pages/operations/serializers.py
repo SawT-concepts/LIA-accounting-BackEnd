@@ -146,8 +146,9 @@ class TaxRollReadSerializer (serializers.ModelSerializer):
 
 
 class TransactionSummarySerializer(serializers.Serializer):
-    amount_paid = serializers.DecimalField(max_digits=10, decimal_places=2)
-    total_tax_paid = serializers.DecimalField(max_digits=10, decimal_places=2)
+    amount_paid = serializers.IntegerField()
+    total_tax_paid = serializers.IntegerField()
+    total_staffs = serializers.IntegerField()
 
     # You can add more fields as needed based on your data model
 

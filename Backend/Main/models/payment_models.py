@@ -35,6 +35,7 @@ class Payroll(models.Model):
     total_amount_for_tax = models.BigIntegerField(default=0)
     total_amount_for_salary = models.BigIntegerField(default=0)
 
+
     school = models.ForeignKey("Main.School", on_delete=models.CASCADE)
 
     #!
@@ -48,12 +49,18 @@ class Payroll(models.Model):
 
     #! method to calculate the total amount paid for tax
     def get_total_tax_paid(self):
-        staffs_data = self.staffs if self.staffs else []
+        staffs_data = json.loads(self.staffs) if isinstance(self.staffs, str) else self.staffs
         return sum(staff.get("tax_payable", 0) for staff in staffs_data if isinstance(staff, dict) and "tax_payable" in staff)
 
     def get_total_salary_paid(self):
-        staffs_data = self.staffs if self.staffs else []
-        return sum(staff.get("basic_salary", 0) for staff in staffs_data if isinstance(staff, dict) and "basic_salary" in staff)
+        staffs_data = json.loads(self.staffs) if isinstance(self.staffs, str) else self.staffs
+        total_payable_salary = sum(staff.get("basic_salary", 0) for staff in staffs_data if isinstance(staff, dict) and "basic_salary" in staff)
+        total_tax = sum(staff.get("tax_payable", 0) for staff in staffs_data if isinstance(staff, dict) and "tax_payable" in staff)
+        deductions = sum(staff.get("salary_deduction", 0) for staff in staffs_data if isinstance(staff, dict) and "salary_deduction" in staff)
+
+        print(deductions)
+        return total_payable_salary + total_tax - deductions
+    
 
     def remove_staff_by_id(self, staff_id):
         if "staffs" not in self.staffs:
@@ -72,13 +79,15 @@ class Payroll(models.Model):
         return failed_staffs
 
     def get_payment_summary(self):
+        staffs_data = json.loads(self.staffs) if isinstance(self.staffs, str) else self.staffs
+
         total_amount_for_tax = self.total_amount_for_tax
         total_amount_for_salary = self.total_amount_for_salary
-        total_staffs = len(self.staffs)
+        total_staffs = len(staffs_data)
         successful_staffs = sum(
-            1 for staff in self.staffs if staff.get("status") == "SUCCESS")
+            1 for staff in staffs_data if isinstance(staff, dict) and staff.get("status") == "SUCCESS")
         failed_staffs = sum(
-            1 for staff in self.staffs if staff.get("status") == "FAILED")
+            1 for staff in staffs_data if isinstance(staff, dict) and staff.get("status") == "FAILED")
 
         return {
             "total_amount_for_tax": total_amount_for_tax,
