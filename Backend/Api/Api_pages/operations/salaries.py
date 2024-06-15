@@ -193,7 +193,7 @@ class InitiatePayroll (APIView):
             payroll.save()
 
             # Serialize the payroll data
-            serializer = PayrollSerializer(payroll)
+            serializer = PayrollWriteSerializer(payroll)
 
             return Response({"message": "Payroll initiated successfully", "payroll": serializer.data}, status=status.HTTP_201_CREATED)
 
@@ -411,11 +411,10 @@ class AddStaffToPayroll(APIView):
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
 class RemoveStaffFromPayroll(APIView):
     def post(self, request, payroll_id):
         try:
-            # check_account_type(self.request.user, account_type)
+            check_account_type(self.request.user, account_type)
             staff_id = request.data.get('staff_id')
             payroll_instance = get_object_or_404(Payroll, id=payroll_id)
 
@@ -433,8 +432,6 @@ class RemoveStaffFromPayroll(APIView):
                         "message": "Staff Removed"
                     }
                 )
-
-
 
                 return Response({"message": "Staff Removed", "payroll": serializer.data}, status=HTTP_200_OK)
             else:

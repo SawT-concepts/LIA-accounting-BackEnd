@@ -119,15 +119,15 @@ class StaffWriteSerializer (serializers.ModelSerializer):
 class PayrollSerializer (serializers.ModelSerializer):
     class Meta:
         model = Payroll
-        fields = ('status', 'name', 'date_initialized', 'total_amount_salary')
+        fields = ('id', 'status', 'name', 'date_initiated', 'total_amount_for_salary')
 
 
 class PayrollReadSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Payroll
-        fields = ('status', 'name', 'date_initialized',
-                  'total_amount_salary', 'total_amount_tax')
+        fields = ('status', 'name', 'date_initiated',
+                  'total_amount_for_salary', 'total_amount_tax')
 
 
 class TransferTransactionWriteSerializer (serializers.ModelSerializer):
@@ -157,7 +157,7 @@ class TransactionSummarySerializer(serializers.Serializer):
         fields = ('amount_paid', 'total_tax_paid')
 
 
-class PayrollSerializer (serializers.ModelSerializer):
+class PayrollWriteSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Payroll
