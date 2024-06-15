@@ -62,12 +62,22 @@ class Payroll(models.Model):
     
 
     def remove_staff_by_id(self, staff_id):
-        if "staffs" not in self.staffs:
-            return  # If staffs is not a list, nothing to remove
+        # Ensure staffs is a list
+        if isinstance(self.staffs, str):
+            self.staffs = json.loads(self.staffs)
+        
+        if not isinstance(self.staffs, list):
+            return False 
 
+        original_length = len(self.staffs)
         updated_staffs = [
-            staff for staff in self.staffs if staff.get("staff_id") != staff_id]
+            staff for staff in self.staffs if staff.get("staff_id") != staff_id
+        ]
         self.staffs = updated_staffs
+        
+        print(len(updated_staffs) < original_length)
+        return len(updated_staffs) < original_length
+
 
     def get_all_failed_staff_payment(self):
         failed_staffs = []

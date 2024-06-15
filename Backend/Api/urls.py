@@ -55,6 +55,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path ('get_header_summary', GetPercentageSummary.as_view(), name='get_header_summary'),
     path('get_operations_breakdown', GetParticularsSummary.as_view(), name='get_percentage_breakdown'),
+    path('get_payroll_info/<str:payroll_id>', GetPayrollDetails.as_view(), name='get_payroll'),
 
 
      #transfers
@@ -73,6 +74,8 @@ urlpatterns = [
          InitiateTaxroll.as_view(), name='generate_taxroll'),
     path('get_payroll_summary/<str:payroll_id>',
          GenerateTransactionSummary.as_view(), name='get_payroll_summary'),
+     path('add_staff_to_payroll/<str:payroll_id>', AddStaffToPayroll.as_view(), name='add_staff_to_payroll'),
+     path('remove_staff_from_payroll/<str:payroll_id>', RemoveStaffFromPayroll.as_view(), name='remove_staff_from_payroll'),
     path('get_all_payroll', GetAllPayroll.as_view(), name='get_all_payroll'),
 
 
@@ -125,5 +128,4 @@ urlpatterns = [
 
      path ('accountant/get_financial_info_for_class/<str:grade_id>/<str:term>', GetFinancialInfoForAClass.as_view(), name="get_financial_info_for_class")
 ]
-
 

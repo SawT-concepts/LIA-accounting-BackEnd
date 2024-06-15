@@ -19,6 +19,9 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import APIException
 from rest_framework.decorators import api_view
 from Main.model_function.helper import generate_staffroll
+from django.db import transaction
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 account_type = "OPERATIONS"
 
@@ -78,15 +81,14 @@ class AddAndEditStaff (APIView):
             data = request.data
             serialized_data = StaffWriteSerializer(
                 data=data, context={'request': request})
- 
+
             if serialized_data.is_valid():
-    
+
                 verify_bank_account = resolve_bank_account(
                     serialized_data.validated_data['account_number'], serialized_data.validated_data['bank'].bank_code)
 
                 if verify_bank_account is None:
                     return Response({"message": "Bank Account Details not recognized"}, status=HTTP_400_BAD_REQUEST)
-
 
                 serialized_data.save(school=user_school)
 
@@ -208,6 +210,28 @@ class InitiatePayroll (APIView):
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class GetPayrollDetails (APIView):
+    def get(self, request, payroll_id):
+        try:
+            check_account_type(request.user, account_type)
+            payroll_instance = get_object_or_404(Payroll, id=payroll_id)
+
+            serializer = PayrollSerializer(payroll_instance)
+            return Response({"payroll": serializer.data}, status=status.HTTP_200_OK)
+
+        except PermissionDenied:
+            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
+            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+
+        except APIException as e:
+            # Handle specific API-related errors and return their details.
+            return Response({"message": str(e.detail)}, status=e.status_code)
+
+        except Exception as e:
+            # For all other exceptions, return a generic error message.
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class InitiateTaxroll(APIView):
     """
     The API is responsible for initiating payroll instance.
@@ -218,14 +242,15 @@ class InitiateTaxroll(APIView):
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
-            taxroll_response = Taxroll.generate_taxroll_out_of_payroll(payroll_id, user_school)
+            taxroll_response = Taxroll.generate_taxroll_out_of_payroll(
+                payroll_id, user_school)
 
             if taxroll_response['status'] == "SUCCESS":
                 taxroll_instance = taxroll_response['data']
-                
+
                 # Serialize the taxroll_instance
                 serialized_data = TaxRollReadSerializer(taxroll_instance)
-                
+
                 return Response(serialized_data.data, status=status.HTTP_201_CREATED)
 
             return Response({"message": taxroll_response['message']}, status=status.HTTP_404_NOT_FOUND if taxroll_response['code'] == "ERROR_404" else status.HTTP_502_BAD_GATEWAY)
@@ -238,44 +263,41 @@ class InitiateTaxroll(APIView):
 
         except Exception as e:
             return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-
 
 
 class GenerateTransactionSummary (APIView):
     '''this api is responsible for returning a TransactionSummary from an existing payroll transaction'''
 
     def get(self, request, payroll_id, *args, **kwargs):
-        # try:
-        check_account_type(request.user, account_type)
-        payroll_instance = get_object_or_404(Payroll, id=payroll_id)
-        print(payroll_instance)
-        total_amount_paid = payroll_instance.get_total_salary_paid()
-        total_tax_paid = payroll_instance.get_total_tax_paid()
-        summary = payroll_instance.get_payment_summary()
-        # todo: Add the total transfer list for all the staffs paid (total amount)
+        try:
+            check_account_type(request.user, account_type)
+            payroll_instance = get_object_or_404(Payroll, id=payroll_id)
+            total_amount_paid = payroll_instance.get_total_salary_paid()
+            total_tax_paid = payroll_instance.get_total_tax_paid()
+            summary = payroll_instance.get_payment_summary()
+            # todo: Add the total transfer list for all the staffs paid (total amount)
 
-        # Create an instance of the serializer with the response data
-        serializer = TransactionSummarySerializer({
-            "amount_paid": total_amount_paid,
-            "total_tax_paid": total_tax_paid,
-            "total_staffs": summary['total_staffs']
-        })
+            # Create an instance of the serializer with the response data
+            serializer = TransactionSummarySerializer({
+                "amount_paid": total_amount_paid,
+                "total_tax_paid": total_tax_paid,
+                "total_staffs": summary['total_staffs']
+            })
 
-        # Return the serialized data in the response
-        return Response(serializer.data, status=HTTP_200_OK)
+            # Return the serialized data in the response
+            return Response(serializer.data, status=HTTP_200_OK)
 
-        # except PermissionDenied:
-        #     # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-        #     return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+        except PermissionDenied:
+            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
+            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
 
-        # except APIException as e:
-        #     # Handle specific API-related errors and return their details.
-        #     return Response({"message": str(e.detail)}, status=e.status_code)
+        except APIException as e:
+            # Handle specific API-related errors and return their details.
+            return Response({"message": str(e.detail)}, status=e.status_code)
 
-        # except Exception as e:
-        #     # For all other exceptions, return a generic error message.
-        #     return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            # For all other exceptions, return a generic error message.
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class GetAllPayroll (APIView):
@@ -340,16 +362,86 @@ class GetPayrollDetails (APIView):
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GetInAppAuthentication (APIView):
-    '''This is supposed to be for the internal authentication'''
-
-
-# framework
-'''class TestClass (APIView):
-    # this api is responsible for getting all the staff (active)
-    def get(self):
+class AddStaffToPayroll(APIView):
+    def post(self, request, payroll_id):
         try:
             check_account_type(self.request.user, account_type)
-            user_school = get_user_school(self.request.user)
+            staff_id = request.data.get('staff_id')
+            if not staff_id or not isinstance(staff_id, int):
+                return Response({"message": "Invalid staff ID"}, status=HTTP_400_BAD_REQUEST)
+
+            # Check user permissions
+            check_account_type(self.request.user, account_type)
+
+            # Retrieve instances
+            staff_instance = get_object_or_404(Staff, id=staff_id)
+            payroll_instance = get_object_or_404(Payroll, id=payroll_id)
+
+            # Prepare staff data to add to payroll
+            staff_data_list = [
+                {
+                    "staff_firstname": staff_instance.first_name,
+                    "staff_id": staff_instance.id,
+                    "rank": staff_instance.staff_type.name,
+                    "tax": staff_instance.staff_type.tax,
+                    "basic_salary": staff_instance.staff_type.basic_salary,
+                    "deduction": staff_instance.salary_deduction,
+                    "salary_to_be_paid": staff_instance.staff_type.basic_salary - staff_instance.staff_type.tax - staff_instance.salary_deduction,
+                    "account_number": staff_instance.account_number,
+                    "bank": staff_instance.bank.name,
+                    "account_name": f"{staff_instance.first_name} {staff_instance.last_name}",
+                    "payment_status": "PENDING",
+                },
+            ]
+
+            # Add staff to payroll inside a transaction
+            with transaction.atomic():
+                payroll_instance.add_staff(staff_data_list)
+                payroll_instance.save()  # Ensure changes are saved
+
+            return Response({"message": "Staff Added"}, status=HTTP_200_OK)
+
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)'''
+            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+
+        except APIException as e:
+            return Response({"message": str(e.detail)}, status=e.status_code)
+
+        except Exception as e:
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class RemoveStaffFromPayroll(APIView):
+    def post(self, request, payroll_id):
+        try:
+            # check_account_type(self.request.user, account_type)
+            staff_id = request.data.get('staff_id')
+            payroll_instance = get_object_or_404(Payroll, id=payroll_id)
+
+            staff_removed = payroll_instance.remove_staff_by_id(staff_id)
+            payroll_instance.save()
+            if staff_removed:
+
+                # Notify WebSocket group
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    'payroll_updates',
+                    {
+                        "type": "payroll_update",
+                        "message": "Staff Removed"
+                    }
+                )
+
+                return Response({"message": "Staff Removed"}, status=HTTP_200_OK)
+            else:
+                return Response({"message": "Staff not found in payroll"}, status=HTTP_404_NOT_FOUND)
+
+        except PermissionDenied:
+            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+
+        except APIException as e:
+            return Response({"message": str(e.detail)}, status=e.status_code)
+
+        except Exception as e:
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
