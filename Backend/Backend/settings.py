@@ -71,9 +71,14 @@ ASGI_APPLICATION = 'Backend.asgi.application'
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [("redis://default:XPkJdlhNWgmUOUIbUgzDeMSYemmiMuZi@roundhouse.proxy.rlwy.net:11530")],
+        },
     },
 }
+
+
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
