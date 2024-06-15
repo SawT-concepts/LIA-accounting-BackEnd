@@ -93,12 +93,11 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        # This is the default database name from your image.
         'NAME': 'phqueyhm',
         'USER': 'phqueyhm',
-        'PASSWORD': 'XP69t1p2o3fT_8O1HSWpmNVDT8aEnaxU',  # Make sure this is kept secret!
+        'PASSWORD': 'XP69t1p2o3fT_8O1HSWpmNVDT8aEnaxU',  
         'HOST': 'cornelius.db.elephantsql.com',
-        'PORT': '5432',  # default PostgreSQL port
+        'PORT': '5432', 
     }
 }
 

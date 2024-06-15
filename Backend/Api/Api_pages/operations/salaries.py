@@ -421,6 +421,7 @@ class RemoveStaffFromPayroll(APIView):
 
             staff_removed = payroll_instance.remove_staff_by_id(staff_id)
             payroll_instance.save()
+            serializer = PayrollSerializer(payroll_instance)
             if staff_removed:
 
                 # Notify WebSocket group
@@ -433,7 +434,9 @@ class RemoveStaffFromPayroll(APIView):
                     }
                 )
 
-                return Response({"message": "Staff Removed"}, status=HTTP_200_OK)
+
+
+                return Response({"message": "Staff Removed", "payroll": serializer.data}, status=HTTP_200_OK)
             else:
                 return Response({"message": "Staff not found in payroll"}, status=HTTP_404_NOT_FOUND)
 
