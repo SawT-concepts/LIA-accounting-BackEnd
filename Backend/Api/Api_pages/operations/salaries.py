@@ -445,3 +445,30 @@ class RemoveStaffFromPayroll(APIView):
 
         except Exception as e:
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+class ProcessPayrollAndTax (APIView):
+    def post (self, request, payroll_id):
+        try:
+            check_account_type(self.request.user, account_type)
+            payroll_instance = get_object_or_404(Payroll, id=payroll_id)
+            taxroll_instance = get_object_or_404(Taxroll, payroll= payroll_id) 
+
+            payroll_instance.status = Status[1][1]
+            taxroll_instance.status = Status[1][1]
+
+            payroll_instance.save()
+            taxroll_instance.save()
+
+            return Response({"message": "Payroll processed"}, status=HTTP_200_OK)
+
+
+        except PermissionDenied:
+            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+
+        except APIException as e:
+            return Response({"message": str(e.detail)}, status=e.status_code)
+
+        except Exception as e:
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)

@@ -79,28 +79,28 @@ CHANNEL_LAYERS = {
 }
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'phqueyhm',
-        'USER': 'phqueyhm',
-        'PASSWORD': 'XP69t1p2o3fT_8O1HSWpmNVDT8aEnaxU',  
-        'HOST': 'cornelius.db.elephantsql.com',
-        'PORT': '5432', 
-    }
-}
-
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'railway',
-#         'USER': 'postgres',
-#         'PASSWORD': 'UPSSxFHQphBByVxFErFVDlHtLqPViPiO',  
-#         'HOST': 'viaduct.proxy.rlwy.net',
-#         'PORT': '26969', 
+#         'NAME': 'phqueyhm',
+#         'USER': 'phqueyhm',
+#         'PASSWORD': 'XP69t1p2o3fT_8O1HSWpmNVDT8aEnaxU',  
+#         'HOST': 'cornelius.db.elephantsql.com',
+#         'PORT': '5432', 
 #     }
 # }
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'railway',
+        'USER': 'postgres',
+        'PASSWORD': 'UPSSxFHQphBByVxFErFVDlHtLqPViPiO',  
+        'HOST': 'viaduct.proxy.rlwy.net',
+        'PORT': '26969', 
+    }
+}
 
 # caches
 CACHES = {

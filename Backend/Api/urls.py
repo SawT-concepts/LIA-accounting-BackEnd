@@ -56,6 +56,7 @@ urlpatterns = [
     path ('get_header_summary', GetPercentageSummary.as_view(), name='get_header_summary'),
     path('get_operations_breakdown', GetParticularsSummary.as_view(), name='get_percentage_breakdown'),
     path('get_payroll_info/<str:payroll_id>', GetPayrollDetails.as_view(), name='get_payroll'),
+    path('process_payroll/<str:payroll_id>',  ProcessPayrollAndTax.as_view(), name='process_payroll'),
 
 
      #transfers

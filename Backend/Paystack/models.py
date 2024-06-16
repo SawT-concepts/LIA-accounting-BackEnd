@@ -28,5 +28,5 @@ class Bank (models.Model):
             )
             bank_instance.save()
             print(f"Added bank {bank['name']}")
-            time.sleep(0.05)
+
 
