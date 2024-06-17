@@ -9,12 +9,10 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from Api.Api_pages.school_fees.main import *
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
-from Api.Api_pages.school_accountant.main import GetPercentageSummary, GetGraphOfClassPayment , GetPaymentSmmaryByClass
+from Api.Api_pages.school_accountant.main import GetPercentageSummary, GetGraphOfClassPayment, GetPaymentSmmaryByClass
 from Api.Api_pages.school_accountant.student_and_class import GetAllStudents, GetListOfClass
 from Api.Api_pages.school_accountant.class_fee_settings import GetFinancialInfoForAClass
 from Api.Api_pages.operations.transfers import GetAllTransferTransaction, GetCashLeftInSafeAndCurrentMonthTransferSummary
-
-
 
 
 router = DefaultRouter()
@@ -37,11 +35,14 @@ urlpatterns = [
     path('fetch_header', FetchHeader.as_view(), name='fetch_header'),
     path('fetch_school_rank', GetRanks.as_view(), name='fetch_school_rank'),
     path('fetch_banks', GetBanks.as_view(), name='fetch_banks'),
-    path('verify_account_number', VerifyAccountNumber.as_view(), name='verify_account_number'),
+    path('verify_account_number', VerifyAccountNumber.as_view(),
+         name='verify_account_number'),
 
     # Operation
     path('get_amount_available_operations_account',
-         GetAmountAvailableOperationsAccount.as_view(), name='get_amount available'),  # ✅
+         GetAmountAvailableOperationsAccount.as_view(), name='get_amount available'),
+    path('get_operations_and_central_operations_account',
+         GetOperationsAndCenteralAccountTotal.as_view(), name='get_operations_and_central_operations'),
     path('get_cash_transaction_six_months_ago',
          GetMonthlyTransaction.as_view(), name="get_monthly_transaction"),  # ✅
     path('get_cash_and_transfer_record_seven_days_ago', GetTransactionSevenDaysAgo.as_view(
@@ -53,15 +54,21 @@ urlpatterns = [
     path('view_cash_transction_summary', GetCashLeftInSafeAndCurrentMonthCashSummary.as_view(
     ), name="View cash transaction summary"),
     path('', include(router.urls)),
-    path ('get_header_summary', GetPercentageSummary.as_view(), name='get_header_summary'),
-    path('get_operations_breakdown', GetParticularsSummary.as_view(), name='get_percentage_breakdown'),
-    path('get_payroll_info/<str:payroll_id>', GetPayrollDetails.as_view(), name='get_payroll'),
-    path('process_payroll/<str:payroll_id>',  ProcessPayrollAndTax.as_view(), name='process_payroll'),
+    path('get_header_summary', GetPercentageSummary.as_view(),
+         name='get_header_summary'),
+    path('get_operations_breakdown', GetParticularsSummary.as_view(),
+         name='get_percentage_breakdown'),
+    path('get_payroll_info/<str:payroll_id>',
+         GetPayrollDetails.as_view(), name='get_payroll'),
+    path('process_payroll/<str:payroll_id>',
+         ProcessPayrollAndTax.as_view(), name='process_payroll'),
 
 
-     #transfers
-     path('get_all_transfers_transaction/<str:pending>/', GetAllTransferTransaction.as_view(), name='get_all_transfers_transaction'),
-     path('get_cash_transaction_summary', GetCashLeftInSafeAndCurrentMonthTransferSummary.as_view(), name='get_cash_transaction_summary'),
+    # transfers
+    path('get_all_transfers_transaction/<str:pending>/',
+         GetAllTransferTransaction.as_view(), name='get_all_transfers_transaction'),
+    path('get_cash_transaction_summary', GetCashLeftInSafeAndCurrentMonthTransferSummary.as_view(
+    ), name='get_cash_transaction_summary'),
 
 
     # salaries and staffs
@@ -75,8 +82,10 @@ urlpatterns = [
          InitiateTaxroll.as_view(), name='generate_taxroll'),
     path('get_payroll_summary/<str:payroll_id>',
          GenerateTransactionSummary.as_view(), name='get_payroll_summary'),
-     path('add_staff_to_payroll/<str:payroll_id>', AddStaffToPayroll.as_view(), name='add_staff_to_payroll'),
-     path('remove_staff_from_payroll/<str:payroll_id>', RemoveStaffFromPayroll.as_view(), name='remove_staff_from_payroll'),
+    path('add_staff_to_payroll/<str:payroll_id>',
+         AddStaffToPayroll.as_view(), name='add_staff_to_payroll'),
+    path('remove_staff_from_payroll/<str:payroll_id>',
+         RemoveStaffFromPayroll.as_view(), name='remove_staff_from_payroll'),
     path('get_all_payroll', GetAllPayroll.as_view(), name='get_all_payroll'),
 
 
@@ -112,21 +121,27 @@ urlpatterns = [
          GetSchoolFeesBreakDownCharges.as_view(), name='get_school_fees_Breakdown'),
     path("payment/get_uniform_books_breakdown/<str:student_id>",
          GetUniformAndBookFeeBreakDownCharges.as_view(), name='get_uniform_books_Breakdown'),
-     path("payment/get_bus_fee_breakdown/<str:student_id>", GetBusFeeBreakDownCharges.as_view(), name="get_bus_fee_Break_Down"),
-     path("payment/get_other_fee_breakdown/<str:student_id>", GetOtherPaymentBreakDownCharges.as_view(), name="get_other_fee_breakdown"),
+    path("payment/get_bus_fee_breakdown/<str:student_id>",
+         GetBusFeeBreakDownCharges.as_view(), name="get_bus_fee_Break_Down"),
+    path("payment/get_other_fee_breakdown/<str:student_id>",
+         GetOtherPaymentBreakDownCharges.as_view(), name="get_other_fee_breakdown"),
 
 
 
 
-     #school accountant
-     path ('accountant/get_percentage_summary', GetPercentageSummary.as_view(), name="get_percentage_summary"),
-     path ('accountant/get_graph_payment_of_classes', GetGraphOfClassPayment.as_view(), name="get_graph_payment_of_classes"),
-     path ('accountant/get_payment_summary_by_class/<str:class_id>', GetPaymentSmmaryByClass.as_view(), name="get_payment_summary_by_class"),
+    # school accountant
+    path('accountant/get_percentage_summary',
+         GetPercentageSummary.as_view(), name="get_percentage_summary"),
+    path('accountant/get_graph_payment_of_classes',
+         GetGraphOfClassPayment.as_view(), name="get_graph_payment_of_classes"),
+    path('accountant/get_payment_summary_by_class/<str:class_id>',
+         GetPaymentSmmaryByClass.as_view(), name="get_payment_summary_by_class"),
 
-     path ('accountant/get_classes',  GetListOfClass.as_view(), name="get_classes"),
-     path ('accountant/get_all_students', GetAllStudents.as_view(), name="get_all_students"),
+    path('accountant/get_classes',  GetListOfClass.as_view(), name="get_classes"),
+    path('accountant/get_all_students',
+         GetAllStudents.as_view(), name="get_all_students"),
 
 
-     path ('accountant/get_financial_info_for_class/<str:grade_id>/<str:term>', GetFinancialInfoForAClass.as_view(), name="get_financial_info_for_class")
+    path('accountant/get_financial_info_for_class/<str:grade_id>/<str:term>',
+         GetFinancialInfoForAClass.as_view(), name="get_financial_info_for_class")
 ]
-

@@ -15,6 +15,36 @@ class OperationsAccountSerializer(serializers.ModelSerializer):
         return obj.get_total_amount_available()
 
 
+class OperationsAndCapitalAccountSerializer(serializers.Serializer):
+    operations_account = serializers.SerializerMethodField()
+    central_account = serializers.SerializerMethodField()
+
+    def get_operations_account(self, obj):
+        operations_account = obj.get('operations_account')
+        return OperationsAccountTotalSerializer(operations_account).data
+
+    def get_central_account(self, obj):
+        central_account = obj.get('central_account')
+        return CentralAccountTotalSerializer(central_account).data
+
+
+
+class  OperationsAccountTotalSerializer(serializers.ModelSerializer):
+    total_amount_available = serializers.SerializerMethodField()
+    class Meta:
+        model = Operations_account
+        fields = ('total_amount_available',)
+
+    def get_total_amount_available(self, obj):
+        return obj.get_total_amount_available()
+    
+
+class  CentralAccountTotalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Capital_Account
+        fields = ('amount_availabe',)
+
+
 class SummaryTransactionSerializer(serializers.Serializer):
     date = serializers.CharField()
     transaction_data = serializers.ListField(child=serializers.DictField())

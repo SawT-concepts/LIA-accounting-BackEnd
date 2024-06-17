@@ -60,6 +60,24 @@ class GetAmountAvailableOperationsAccount(APIView):
 
 
 
+class GetOperationsAndCenteralAccountTotal(APIView):
+    permission_classes = [IsAuthenticated]    
+
+    def get(self, request):
+        user_school = get_user_school(request.user)
+        operations_account = get_object_or_404(Operations_account, school=user_school)
+        central_account = get_object_or_404(Capital_Account, school=user_school)
+        
+        data = {
+            'operations_account': operations_account,
+            'central_account': central_account
+        }
+        
+        serializer = OperationsAndCapitalAccountSerializer(data)
+        
+        return Response(serializer.data, status=HTTP_200_OK)
+
+
 
 class GetTransactionSevenDaysAgo (APIView):
     '''
