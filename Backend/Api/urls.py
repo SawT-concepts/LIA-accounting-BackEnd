@@ -95,7 +95,7 @@ urlpatterns = [
     path('get_all_payroll', GetAllPayroll.as_view(), name='get_all_payroll'),
     path('get_payroll_details/<str:payroll_id>',
          ViewPayrollDetails.as_view(), name='get_payroll_details'),
-
+     path('get_all_receipts', ReceiptsListView.as_view(), name='get_all_receipt'),
     # directors transfers
     path('approve_transfer/<str:transaction_id>',
          ApproveTransfer.as_view(), name='approve_transfer'),

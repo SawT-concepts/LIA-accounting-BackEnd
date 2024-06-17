@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.status import *
-from Api.serializers import TokenObtainPairSerializer
+from Api.serializers import TokenObtainPairSerializer, ReceiptsSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import status, viewsets
 from rest_framework.views import APIView
@@ -15,10 +15,9 @@ from Api.helper_functions.auth_methods import *
 from Api.helper_functions.directors.main import *
 from Api.Api_pages.operations.serializers import *
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import get_user_model
 from rest_framework.exceptions import APIException
 from Paystack.transfers import *
-
+from rest_framework import generics
 
 
 account_type = "DIRECTOR"
@@ -185,5 +184,49 @@ class ApproveTransfer (APIView):
         except APIException as e:
             return Response({"message": str(e.detail)}, status=e.status_code)
 
-        # except Exception as e:
-        #     return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class TransferFromCapitalAccountToOperationAccount(APIView):
+    def post(self, request):
+        data = request.data
+        transfer_amount = data.get('transfer_amount')
+
+        if transfer_amount is None or not isinstance(transfer_amount, int) or transfer_amount <= 0:
+            return Response({"message": "Invalid transfer amount provided."}, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            account_type = "expected_account_type"  # Define the expected account type
+            check_account_type(request.user, account_type)
+            user_school = get_user_school(request.user)
+
+            capital_account = Capital_Account.objects.get(school=user_school)
+            capital_account.transfer_to_operations_account(transfer_amount=transfer_amount)
+
+            return Response({"message": "Transfer successful."}, status=HTTP_200_OK)
+
+        except PermissionDenied:
+            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+
+        except Capital_Account.DoesNotExist:
+            return Response({"message": "Capital account does not exist for the user's school."}, status=HTTP_404_NOT_FOUND)
+
+        except Operations_account.DoesNotExist:
+            return Response({"message": "Operations account does not exist for the user's school."}, status=HTTP_404_NOT_FOUND)
+
+        except APIException as e:
+            return Response({"message": str(e.detail)}, status=e.status_code)
+
+        except ValueError as e:
+            return Response({"message": str(e)}, status=HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+class ReceiptsListView(generics.ListAPIView):
+    queryset = Receipts.objects.all()
+    serializer_class = ReceiptsSerializer
