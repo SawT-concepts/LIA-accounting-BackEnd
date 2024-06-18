@@ -128,7 +128,7 @@ class GetGraphOfClassPayment(APIView):
     def get(self, request):
         try:
             # Check if the authenticated user has the required account type.
-            check_account_type(request.user, account_type)
+            # check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
             result = generate_grade_summary(user_school)
@@ -137,7 +137,7 @@ class GetGraphOfClassPayment(APIView):
 
         except PermissionDenied:
             # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except Exception as e:
             return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
