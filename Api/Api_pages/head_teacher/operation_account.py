@@ -81,13 +81,9 @@ class HeadTeacherModifyTransaction(APIView):
 class HeadTeacherBulkModifyTransaction(APIView):
     permission_classes = [IsAuthenticated]
 
-    STATUS_CHOICES = {
-        "SUCCESS", "FAILED", "CANCELLED",
-    }
-
     def post(self, request, status):
         modified_status = status.upper()
-        if modified_status not in self.STATUS_CHOICES:
+        if modified_status not in TransactionStatus.values:
             return Response({"message": "Invalid status"}, status=HTTP_400_BAD_REQUEST)
 
         data = request.data
@@ -95,19 +91,18 @@ class HeadTeacherBulkModifyTransaction(APIView):
             return Response({"message": "Data must be a list of transactions"}, status=HTTP_400_BAD_REQUEST)
 
         try:
-            # Assuming check_account_type is a custom function to check account type
             check_account_type(request.user, account_type)
 
             for data_instance in data:
                 id = data_instance.get('id')
                 if not id:
-                    continue  # Skip if no id provided
+                    continue
 
                 transaction_instance = Operations_account_transaction_record.objects.filter(
                     id=id).first()
 
                 if transaction_instance is None:
-                    continue  # Skip if no transaction found
+                    continue 
 
                 transaction_instance.status = modified_status
                 transaction_instance.save()
