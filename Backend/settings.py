@@ -38,6 +38,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -84,9 +85,9 @@ CHANNEL_LAYERS = {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 #         'NAME': 'phqueyhm',
 #         'USER': 'phqueyhm',
-#         'PASSWORD': 'XP69t1p2o3fT_8O1HSWpmNVDT8aEnaxU',  
+#         'PASSWORD': 'XP69t1p2o3fT_8O1HSWpmNVDT8aEnaxU',
 #         'HOST': 'cornelius.db.elephantsql.com',
-#         'PORT': '5432', 
+#         'PORT': '5432',
 #     }
 # }
 
@@ -96,9 +97,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'railway',
         'USER': 'postgres',
-        'PASSWORD': 'UPSSxFHQphBByVxFErFVDlHtLqPViPiO',  
+        'PASSWORD': 'UPSSxFHQphBByVxFErFVDlHtLqPViPiO',
         'HOST': 'viaduct.proxy.rlwy.net',
-        'PORT': '26969', 
+        'PORT': '26969',
     }
 }
 
@@ -178,7 +179,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10, 
+    'PAGE_SIZE': 10,
 }
 
 
