@@ -37,11 +37,11 @@ class HeadTeacherGetAllPendingTransaction(APIView):
             return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
 
-
 class TransactionStatus(models.TextChoices):
     SUCCESS = 'SUCCESS', 'Success'
     FAILED = 'CANCELLED', 'Cancelled'
     # Add other statuses if needed
+
 
 class HeadTeacherModifyTransaction(APIView):
     permission_classes = [IsAuthenticated]
@@ -59,13 +59,16 @@ class HeadTeacherModifyTransaction(APIView):
             return Response({"message": "Invalid status provided"}, status=HTTP_400_BAD_REQUEST)
 
         try:
-            check_account_type(request.user, account_type)  # account_type is not defined in the provided snippet.
-            transaction_instance = get_object_or_404(Operations_account_transaction_record, id=id)
+            # account_type is not defined in the provided snippet.
+            check_account_type(request.user, account_type)
+            transaction_instance = get_object_or_404(
+                Operations_account_transaction_record, id=id)
 
             transaction_instance.status = status
 
             operation_type = "SUBTRACT" if status == TransactionStatus.SUCCESS else "SAFE"
-            update_operations_account(transaction_instance.amount, user_school.id, operation_type)
+            update_operations_account(
+                transaction_instance.amount, user_school.id, operation_type)
 
             transaction_instance.save()
 
@@ -75,30 +78,41 @@ class HeadTeacherModifyTransaction(APIView):
             return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
 
-
-class BulkModifyTransaction (APIView):
+class HeadTeacherBulkModifyTransaction(APIView):
     permission_classes = [IsAuthenticated]
 
+    STATUS_CHOICES = {
+        "SUCCESS", "FAILED", "CANCELLED",
+    }
+
     def post(self, request, status):
-        data = request.data.staffs
-        if not data:
-            return Response({"message": "Status must be set"}, status=HTTP_400_BAD_REQUEST)
+        modified_status = status.upper()
+        if modified_status not in self.STATUS_CHOICES:
+            return Response({"message": "Invalid status"}, status=HTTP_400_BAD_REQUEST)
+
+        data = request.data
+        if not data or not isinstance(data, list):
+            return Response({"message": "Data must be a list of transactions"}, status=HTTP_400_BAD_REQUEST)
 
         try:
+            # Assuming check_account_type is a custom function to check account type
             check_account_type(request.user, account_type)
-            modified_status = str(status.upper())
 
             for data_instance in data:
                 id = data_instance.get('id')
-                transaction_instance = Operations_account_transaction_record.objects.get(
-                    id=id)
+                if not id:
+                    continue  # Skip if no id provided
+
+                transaction_instance = Operations_account_transaction_record.objects.filter(
+                    id=id).first()
 
                 if transaction_instance is None:
-                    continue
+                    continue  # Skip if no transaction found
 
                 transaction_instance.status = modified_status
                 transaction_instance.save()
-                return Response(status=HTTP_200_OK)
+
+            return Response({"message": "Transactions updated successfully"}, status=HTTP_200_OK)
 
         except PermissionDenied:
             return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)

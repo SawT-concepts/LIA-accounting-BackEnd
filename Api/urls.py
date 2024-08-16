@@ -106,6 +106,8 @@ urlpatterns = [
          HeadTeacherGetAllPendingTransaction.as_view(), name='head_teacher_get_all_transactions'),
     path('head_teacher/modify_transaction/<str:id>',
          HeadTeacherModifyTransaction.as_view(), name='head_teacher_modify_transaction'),
+    path('head_teacher/bulk_modify_transaction/<str:status>',
+         HeadTeacherBulkModifyTransaction.as_view(), name='head_teacher_bulk_modify_transaction'),
 
 
     # school fees payment
