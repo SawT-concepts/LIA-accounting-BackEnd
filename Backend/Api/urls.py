@@ -86,7 +86,7 @@ urlpatterns = [
          AddStaffToPayroll.as_view(), name='add_staff_to_payroll'),
     path('remove_staff_from_payroll/<str:payroll_id>',
          RemoveStaffFromPayroll.as_view(), name='remove_staff_from_payroll'),
-    path('get_all_payroll', GetAllPayroll.as_view(), name='get_all_payroll'),
+    path('get_all_payroll', OperationsGetAllPayroll.as_view(), name='get_all_payroll_operations'),
 
 
     # director salary and staffs

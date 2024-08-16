@@ -35,34 +35,23 @@ class GetAllStaffs(APIView):
 
     def get(self, request, *args, **kwargs):
         try:
-            # Check if the authenticated user has the required account type.
             check_account_type(request.user, account_type)
-
-            # Fetch the school associated with the requesting user.
             user_school = get_user_school(request.user)
-
-            # Filter out the active staff members associated with the user's school.
             staffs_active_in_school = Staff.objects.filter(
                 school=user_school, is_active=True)
-
-            # Serialize the staff data for the response.
             serialized_data = StaffReadSerializer(
                 staffs_active_in_school, many=True).data
 
-            # Return the serialized staff data with a 200 OK status.
             return Response(serialized_data, status=HTTP_200_OK)
 
         except PermissionDenied:
-            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
-            # Handle specific API-related errors and return their details.
             return Response({"message": str(e.detail)}, status=e.status_code)
 
         except Exception as e:
-            # For all other exceptions, return a generic error message.
-            return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AddAndEditStaff (APIView):
@@ -74,7 +63,6 @@ class AddAndEditStaff (APIView):
 
     def post(self, request):
         try:
-            # Check if the authenticated user has the required account type.
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
@@ -97,16 +85,13 @@ class AddAndEditStaff (APIView):
             return Response({"message": "Invalid details provided"}, status=HTTP_400_BAD_REQUEST)
 
         except PermissionDenied:
-            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
-            # Handle specific API-related errors and return their details.
             return Response({"message": str(e.detail)}, status=e.status_code)
 
         except Exception as e:
-            # For all other exceptions, return a generic error message.
-            return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
     def patch(self, request):
         try:
@@ -127,16 +112,13 @@ class AddAndEditStaff (APIView):
             return Response(serialized_data.errors, status=HTTP_400_BAD_REQUEST)
 
         except PermissionDenied:
-            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
-            # Handle specific API-related errors and return their details.
             return Response({"message": str(e.detail)}, status=e.status_code)
 
         except Exception as e:
-            # For all other exceptions, return a generic error message.
-            return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -155,15 +137,12 @@ def ShowStaffType(request):
         return Response(serialized_data, status=HTTP_200_OK)
 
     except PermissionDenied:
-        # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-        return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+        return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
     except APIException as e:
-        # Handle specific API-related errors and return their details.
         return Response({"message": str(e.detail)}, status=e.status_code)
 
     except Exception as e:
-        # For all other exceptions, return a generic error message.
         return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
 
 
@@ -198,15 +177,12 @@ class InitiatePayroll (APIView):
             return Response({"message": "Payroll initiated successfully", "payroll": serializer.data}, status=status.HTTP_201_CREATED)
 
         except PermissionDenied:
-            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
-            # Handle specific API-related errors and return their details.
             return Response({"message": str(e.detail)}, status=e.status_code)
 
         except Exception as e:
-            # For all other exceptions, return a generic error message.
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -220,15 +196,12 @@ class GetPayrollDetails (APIView):
             return Response({"payroll": serializer.data}, status=status.HTTP_200_OK)
 
         except PermissionDenied:
-            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
-            # Handle specific API-related errors and return their details.
             return Response({"message": str(e.detail)}, status=e.status_code)
 
         except Exception as e:
-            # For all other exceptions, return a generic error message.
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -256,7 +229,7 @@ class InitiateTaxroll(APIView):
             return Response({"message": taxroll_response['message']}, status=status.HTTP_404_NOT_FOUND if taxroll_response['code'] == "ERROR_404" else status.HTTP_502_BAD_GATEWAY)
 
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
             return Response({"message": str(e.detail)}, status=e.status_code)
@@ -288,43 +261,34 @@ class GenerateTransactionSummary (APIView):
             return Response(serializer.data, status=HTTP_200_OK)
 
         except PermissionDenied:
-            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
-            # Handle specific API-related errors and return their details.
             return Response({"message": str(e.detail)}, status=e.status_code)
 
         except Exception as e:
-            # For all other exceptions, return a generic error message.
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GetAllPayroll (APIView):
-    '''this api is responsible for getting all SalaryPayments'''
+class OperationsGetAllPayroll(APIView):
+    '''This API is responsible for getting all SalaryPayments'''
 
     def get(self, request):
         try:
             check_account_type(self.request.user, account_type)
             user_school = get_user_school(self.request.user)
             payroll_list = Payroll.objects.filter(school=user_school.id)
-
-            serializer = PayrollSerializer(data=payroll_list, many=True)
-
-            # Return the serialized data in the response
+            serializer = PayrollSerializer(payroll_list, many=True)
             return Response(serializer.data, status=HTTP_200_OK)
 
         except PermissionDenied:
-            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
-            # Handle specific API-related errors and return their details.
             return Response({"message": str(e.detail)}, status=e.status_code)
 
         except Exception as e:
-            # For all other exceptions, return a generic error message.
-            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"message": "An error occurred: " + str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class RequeryFailedPayrollTransaction (APIView):
@@ -350,11 +314,9 @@ class GetPayrollDetails (APIView):
             return Response(serializer.data, status=HTTP_200_OK)
 
         except PermissionDenied:
-            # If the user doesn't have the required permissions, return an HTTP 403 Forbidden response.
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
-            # Handle specific API-related errors and return their details.
             return Response({"message": str(e.detail)}, status=e.status_code)
 
         except Exception as e:
@@ -402,7 +364,7 @@ class AddStaffToPayroll(APIView):
             return Response({"message": "Staff Added"}, status=HTTP_200_OK)
 
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
             return Response({"message": str(e.detail)}, status=e.status_code)
@@ -438,7 +400,7 @@ class RemoveStaffFromPayroll(APIView):
                 return Response({"message": "Staff not found in payroll"}, status=HTTP_404_NOT_FOUND)
 
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
             return Response({"message": str(e.detail)}, status=e.status_code)
@@ -465,7 +427,7 @@ class ProcessPayrollAndTax (APIView):
 
 
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
         except APIException as e:
             return Response({"message": str(e.detail)}, status=e.status_code)
