@@ -9,3 +9,4 @@ class MainConfig(AppConfig):
         import Main.signals.grade_signals
         import Main.signals.student_signals
         import Main.signals.school_signals
+        import Main.signals.transaction_signals
