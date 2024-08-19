@@ -66,9 +66,9 @@ class HeadTeacherModifyTransaction(APIView):
 
             transaction_instance.status = status
 
-            operation_type = "SUBTRACT" if status == TransactionStatus.SUCCESS else "SAFE"
-            update_operations_account(
-                transaction_instance.amount, user_school.id, operation_type)
+            # operation_type = "SUBTRACT" if status == TransactionStatus.SUCCESS else "SAFE"
+            # update_operations_account(
+            #     transaction_instance.amount, user_school.id, operation_type)
 
             transaction_instance.save()
 
@@ -102,7 +102,7 @@ class HeadTeacherBulkModifyTransaction(APIView):
                     id=id).first()
 
                 if transaction_instance is None:
-                    continue 
+                    continue
 
                 transaction_instance.status = modified_status
                 transaction_instance.save()
