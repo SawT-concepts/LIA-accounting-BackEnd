@@ -81,7 +81,6 @@ class Operations_account_transaction_record(models.Model):
     def save(self, *args, **kwargs):
         # Check if it's a "Transfer" transaction type
         if self.transaction_type == "TRANSFER":
-
             # Check if account number and receiver name are provided and raise validation error
             if not self.account_number_of_reciever and not self.name_of_reciever:
                 raise ValueError(
@@ -105,7 +104,16 @@ class Operations_account_transaction_record(models.Model):
 
 
 class Operations_account_transaction_modification_tracker (models.Model):
-    transaction = models.OneToOneField(Operations_account_transaction_record, on_delete=models.CASCADE)
+    STATUS_CHOICES = (
+        ("PENDING", "PENDING"),
+        ("APPROVED", "APPROVED"),
+        ("REJECTED", "REJECTED"),
+        ("CANCELLED", "CANCELLED"),
+    )
+
+    transaction = models.ForeignKey(Operations_account_transaction_record, on_delete=models.CASCADE)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
+    head_teacher_comment = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.transaction.reason} {self.transaction.school.name}'
@@ -119,6 +127,7 @@ class Operations_account_transaction_records_edited_fields (models.Model):
         ("name_of_reciever", "name_of_reciever"),
         ("account_number_of_reciever", "account_number_of_reciever"),
         ("bank", "bank"),
+        ("time", "time"),
     )
 
     previous_state_attribute = models.CharField(max_length=50, choices=ATTRIBUTE_CHOICES)

@@ -1,36 +1,42 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_save
 from Api.helper_functions.main import OperationType, update_operations_account
+from Authentication.models import CustomUser
+from Main.models.notification_models import NotificationManager, Notification
 from Main.models.transaction_records_models import Operations_account_transaction_modification_tracker, Operations_account_transaction_record, Operations_account_transaction_records_edited_fields
+
 
 @receiver(pre_save, sender=Operations_account_transaction_record)
 def track_previous_amount(sender, instance, **kwargs):
     """
     Track the previous amount and changes before saving the transaction.
     """
-    if not instance.pk:
-        return
+    if instance.pk:
+        try:
+            old_instance = Operations_account_transaction_record.objects.get(pk=instance.pk,)
+            Operations_account_transaction_modification_tracker.objects.filter(transaction=instance, status="PENDING").update(status="CANCELLED")
+            tracker = Operations_account_transaction_modification_tracker.objects.create(
+                transaction=instance,
+                status="PENDING",
+                head_teacher_comment=""
+            )
 
-    try:
-        previous_instance = sender.objects.get(pk=instance.pk)
-        instance._previous_amount = previous_instance.amount
+            # Check for changes in specific fields
+            fields_to_track = [field[0] for field in Operations_account_transaction_records_edited_fields.ATTRIBUTE_CHOICES]
+            for field in fields_to_track:
+                old_value = getattr(old_instance, field)
+                new_value = getattr(instance, field)
+                if old_value != new_value:
+                    tracker.operations_account_transaction_records_edited_fields_set.create(
+                        previous_state_attribute=field,
+                        previous_state_value=str(old_value),
+                        new_state_attribute=field,
+                        new_state_value=str(new_value)
+                    )
 
-        fields_to_check = ['amount', 'particulars', 'reason', 'name_of_reciever', 'account_number_of_reciever', 'bank']
-        changed_fields = [field for field in fields_to_check if getattr(previous_instance, field) != getattr(instance, field)]
+        except Operations_account_transaction_record.DoesNotExist:
+            pass  # This shouldn't happen, but just in case
 
-        if changed_fields:
-            tracker, _ = Operations_account_transaction_modification_tracker.objects.get_or_create(transaction=instance)
-
-            for field in changed_fields:
-                Operations_account_transaction_records_edited_fields.objects.create(
-                    tracker=tracker,
-                    previous_state_attribute=field,
-                    previous_state_value=str(getattr(previous_instance, field)),
-                    new_state_attribute=field,
-                    new_state_value=str(getattr(instance, field))
-                )
-    except sender.DoesNotExist:
-        pass
 
 @receiver(post_save, sender=Operations_account_transaction_record)
 def update_operations_account_on_transaction(sender, instance, created, **kwargs):
@@ -46,36 +52,52 @@ def update_operations_account_on_transaction(sender, instance, created, **kwargs
         **kwargs: Additional keyword arguments.
     """
     operation_type = None
+    notification_recipients = CustomUser.objects.filter(school=instance.school)
 
-    # Handle PENDING_DELETE: Add the transaction amount back
-    if instance.status == "PENDING_DELETE":
+    if instance.status == Operations_account_transaction_record.Status_choice[0][0]:
+        # Awaiting approval from the head teacher
+        notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[3][0])
         operation_type = OperationType.ADD.value
 
-    # Handle PENDING_EDIT: Add previous amount, then subtract the new amount
-    elif instance.status == "PENDING_EDIT":
-        tracker = Operations_account_transaction_modification_tracker.objects.get(transaction=instance)
-        previous_amount = int(Operations_account_transaction_records_edited_fields.objects.get(
-            tracker=tracker,
-            previous_state_attribute='amount'
-        ).previous_state_value)
+    elif instance.status in [Operations_account_transaction_record.Status_choice[3][0],  # PENDING_DELETE
+                             Operations_account_transaction_record.Status_choice[4][0]]: # PENDING_EDIT
+        operation_type = OperationType.ADD.value
+        notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[3][0])
 
-        # First, add back the previous amount
-        update_operations_account(
-            amount=previous_amount,
-            school_id=instance.school.id,
-            operation_type=OperationType.ADD.value
-        )
-        # Then, subtract the new amount
-        operation_type = OperationType.SUBTRACT.value
+        if instance.status == Operations_account_transaction_record.Status_choice[4][0]:
+            previous_amount = instance._previous_amount
 
-    # Handle SUCCESS: Add or subtract based on transaction category
-    elif instance.status == "SUCCESS":
-        if instance.transaction_category == "CREDIT":
-            operation_type = OperationType.ADD.value
-        elif instance.transaction_category == "DEBIT":
+            # Add back the previous amount
+            update_operations_account(
+                amount=previous_amount,
+                school_id=instance.school.id,
+                operation_type=OperationType.ADD.value
+            )
             operation_type = OperationType.SUBTRACT.value
 
-    # If an operation type is determined, update the operations account
+    elif instance.status == Operations_account_transaction_record.Status_choice[6][0]:  # CANCELLED
+        operation_type = OperationType.ADD.value
+        notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[0][0])
+
+    elif instance.status == Operations_account_transaction_record.Status_choice[5][0]:  # SUCCESS
+        operation_type = OperationType.ADD.value if instance.transaction_category == Operations_account_transaction_record.Transaction_category[0][0] else OperationType.SUBTRACT.value
+
+    # Create notification if needed
+    if notification_recipients.exists():
+        changed_fields = None
+        if hasattr(instance, '_tracker'):
+            changed_fields = Operations_account_transaction_records_edited_fields.objects.filter(
+                tracker=instance._tracker
+            )
+        # NotificationManager.create_notification(
+        #     notification_type=Notification.NOTIFICATION_TYPE_CHOICES[0][0],
+        #     sender=instance.school,
+        #     transaction=instance,
+        #     recipients=notification_recipients,
+        #     changed_fields=changed_fields
+        # )
+
+    # Update the operations account if an operation type is determined
     if operation_type:
         update_operations_account(
             amount=instance.amount,

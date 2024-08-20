@@ -1,109 +1,57 @@
-# from django.db import models
-# from Main.models.payment_models import *
-# from Main.models.school_operations_models import *
-# from Main.models.transaction_records_models import *
-# from django.dispatch import receiver
-# from django.db.models.signals import pre_save, post_save
-# # from django.dispatch import Signal
+from django.db import models
+from Main.models.payment_models import *
+from Main.models.school_operations_models import *
+from Main.models.transaction_records_models import *
 
-# # transaction_status = [('pending', 'Pending'), 
-# #                       ('approved', 'Approved'), 
-# #                       ('declined', 'Declined')]
+class Notification(models.Model):
+    NOTIFICATION_TYPE_CHOICES = [
+        ('transaction', 'Transaction'),
+        ('payment', 'Payment'),
+        ('school', 'School'),
+        ('system', 'System'),
+    ]
 
-# # class Transaction_status(models.Model):
-# #     message = models.CharField(max_length=250, choices=transaction_status)
+    sender = models.ForeignKey('Authentication.CustomUser', on_delete=models.CASCADE)
+    recipients = models.ManyToManyField('Authentication.CustomUser', related_name='notifications')
+    recipients_viewed = models.ManyToManyField('Authentication.CustomUser', related_name='notifications_viewed')
+    date_time = models.DateTimeField(auto_now=True)
+    type_of_notification = models.CharField(max_length=255, choices=NOTIFICATION_TYPE_CHOICES)
+    message = models.TextField()
 
-# #     def __str__(self):
-# #         return str(self.message)
-
-
-# staff = Staff_type.objects.all()
-# transaction_list = Operations_account_transaction_record.objects.all()
-# payroll_list = Payroll.objects.all()
-
-# class Notification(models.Model):
-#     sender = models.CharField(max_length=100)
-#     recipient = models.CharField(max_length=100, choices=staff.name)
-#     date_time = models.DateTimeField(auto_now=True)
-#     message = models.TextField()
-
-#     def __str__(self):
-#         return f'Sender: {self.sender}, Recipient {self.recipient}'
+    def __str__(self):
+        recipients = ", ".join([str(recipient) for recipient in self.recipient.all()])
+        return f'Sender: {self.sender}, Recipients: {recipients}'
 
 
 
-# @receiver(pre_save, sender=transaction_list)
-# def transaction_handler(sender, instance, pk, **kwargs):
-#     notification = Notification.objects.get(pk=pk)
+class NotificationManager:
+    @staticmethod
+    def get_transaction_added_template(transaction):
+        return f"New transaction added: {transaction.reason} for {transaction.amount} on {transaction.time.strftime('%Y-%m-%d %H:%M:%S')}."
 
-#     if instance.status == "PENDING":
-#         notification_instance = Notification.objects.create(
-#             sender=notification.sender,
-#             recipient = notification.recipient,
-#             message = notification.message,
-#             )
-#         notification_instance.save()
-#         # indentation error
-#         return ("SUCCESS")  
-#         print(f'{message}')
+    @staticmethod
+    def get_transaction_edited_template(transaction, changed_fields):
+        changes = ", ".join([f"{field} changed to {getattr(transaction, field)}" for field in changed_fields])
+        return f"Transaction edited: {transaction.reason} - {changes} on {transaction.time.strftime('%Y-%m-%d %H:%M:%S')}."
 
-#     if instance.status == "SUCCESS":
-#         notification_instance = Notification.objects.create(
-#             sender= notification.sender,
-#             recipient = notification.recipient,
-#             message = notification.message,
-#             )
-#         notification_instance.save()
-#         return ("SUCCESS") 
-#         print(f'{message}')
+    @staticmethod
+    def get_transaction_deleted_template(transaction):
+        return f"Transaction deleted: {transaction.reason} for {transaction.amount} on {transaction.time.strftime('%Y-%m-%d %H:%M:%S')}."
 
-#     if instance.status == "CANCELLED":
-#         notification_instance = Notification.objects.create(
-#             sender= notification.sender,
-#             recipient = notification.recipient,
-#             message = notification.message,
-#             )
-#         notification_instance.save()
-#         return ("SUCCESS") 
-#         print(f'{message}')
+    @classmethod
+    def create_notification(cls, notification_type, sender, recipients, transaction, changed_fields=None):
+        if notification_type == 'added':
+            message = cls.get_transaction_added_template(transaction)
+        elif notification_type == 'edited':
+            message = cls.get_transaction_edited_template(transaction, changed_fields)
+        elif notification_type == 'deleted':
+            message = cls.get_transaction_deleted_template(transaction)
+        else:
+            raise ValueError("Invalid notification type")
 
-#     if instance.status == "INITIALIZED" and instance.transaction_type=="CASH":
-#         notification_instance = Notification.objects.create(
-#             sender= notification.sender,
-#             recipient = notification.recipient,
-#             message = notification.message,
-#             )
-#         notification_instance.save()
-#         return ("SUCCESS") 
-#         print(f'{message}')
-
-    
-
-
-# @receiver(pre_save, sender=payroll_list)
-# def salary_pending_handler(sender, instance, **kwargs):
-#     if instance.status == "PENDING":
-#         message = "Salary Payment is Pending"
-#         print(f'{message}')
-
-# @receiver(pre_save, sender=payroll_list)
-# def salary_initiated_handler(sender, instance, **kwargs):
-#     if instance.status == "INITIALIZED":
-#         message = "Salary Payment was Initiated"
-#         print(f'{message}')
-
-# @receiver(pre_save, sender=payroll_list)
-# def salary_success_handler(sender, instance, **kwargs):
-#     if instance.status == "SUCCESS":
-#         message = "Salary Payment was successful"
-#         print(f'{message}')
-
-# @receiver(pre_save, sender=payroll_list)
-# def salary_failed_handler(sender, instance, **kwargs):
-#     if instance.status == "FAILED":
-#         message = "Salary Payment Failed"
-#         print(f'{message}')
-
-
-# """sheryf.534@gmail.com
-# 1234"""
+        return Notification.objects.create(
+            sender= sender,
+            message=message,
+            recipients=recipients,
+            type_of_notification=notification_type
+        )
