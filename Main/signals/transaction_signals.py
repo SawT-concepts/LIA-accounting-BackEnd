@@ -77,25 +77,37 @@ def update_operations_account_on_transaction(sender, instance, created, **kwargs
 
     elif instance.status == Operations_account_transaction_record.Status_choice[6][0]:  # CANCELLED
         operation_type = OperationType.ADD.value
-        notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[0][0])
 
     elif instance.status == Operations_account_transaction_record.Status_choice[5][0]:  # SUCCESS
         operation_type = OperationType.ADD.value if instance.transaction_category == Operations_account_transaction_record.Transaction_category[0][0] else OperationType.SUBTRACT.value
 
-    # Create notification if needed
     if notification_recipients.exists():
         changed_fields = None
         if hasattr(instance, '_tracker'):
             changed_fields = Operations_account_transaction_records_edited_fields.objects.filter(
                 tracker=instance._tracker
             )
-        # NotificationManager.create_notification(
-        #     notification_type=Notification.NOTIFICATION_TYPE_CHOICES[0][0],
-        #     sender=instance.school,
-        #     transaction=instance,
-        #     recipients=notification_recipients,
-        #     changed_fields=changed_fields
-        # )
+
+        notification_category = {
+            'type_of_notification': Notification.NOTIFICATION_TYPE_CHOICES[0][0]
+        }
+
+        if instance.status == Operations_account_transaction_record.Status_choice[5][0]:  # SUCCESS
+            notification_category['category'] = 'success'
+            notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[0][0])
+        elif instance.status == Operations_account_transaction_record.Status_choice[6][0]:  # CANCELLED
+            notification_category['category'] = 'cancelled'
+            notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[0][0])
+        else:
+            notification_category['category'] = 'edited'
+
+        # Put this in a background task
+        NotificationManager.create_notification(
+            notification_category=notification_category,
+            transaction=instance,
+            recipients=notification_recipients,
+            changed_fields=changed_fields
+        )
 
     # Update the operations account if an operation type is determined
     if operation_type:

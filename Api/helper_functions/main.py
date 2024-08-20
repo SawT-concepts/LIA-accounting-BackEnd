@@ -317,13 +317,13 @@ def get_transaction_summary_by_header(transactions):
         # Ensure transaction has the expected attributes
         particulars = getattr(transaction, 'particulars', None)
         amount = getattr(transaction, 'amount', None)
-        
+
         if particulars is None or amount is None:
             raise ValueError("Each transaction must have 'particulars' and 'amount' attributes")
 
         # Get the name of the particulars
         particulars_name = getattr(particulars, 'name', None)
-        
+
         if particulars_name is None:
             raise ValueError("Particulars must have a 'name' attribute")
 
@@ -388,7 +388,7 @@ def  get_cash_left_and_month_summary(school_id, transaction_type=None):
 
     if transaction_type is not None and transaction_type == "CASH":
         transaction_type = "CASH"
-    
+
     if transaction_type is not None and transaction_type == "TRANSFER":
         transaction_type = "TRANSFER"
 

@@ -28,17 +28,34 @@ from .models import (
 # Register your models here.
 
 class OperationsAccountTransactionRecordsEditedFieldsInline(admin.TabularInline):
-    model = Operations_account_transaction_records_edited_fields    
-    extra = 1  # Adjust the number of empty forms displayed
+    model = Operations_account_transaction_records_edited_fields
+    extra = 0  # No empty forms displayed
+    readonly_fields = ('previous_state_attribute', 'previous_state_value', 'new_state_attribute', 'new_state_value', 'date_of_modification')
+    can_delete = False
+    max_num = 0  
 
-@admin.register(  Operations_account_transaction_modification_tracker)
+@admin.register(Operations_account_transaction_modification_tracker)
 class OperationsAccountTransactionModificationTrackerAdmin(admin.ModelAdmin):
     list_display = ('transaction', 'status', 'head_teacher_comment')
+    readonly_fields = ('transaction', 'status', 'head_teacher_comment')
     inlines = [OperationsAccountTransactionRecordsEditedFieldsInline]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 @admin.register(Operations_account_transaction_records_edited_fields)
 class OperationsAccountTransactionRecordsEditedFieldsAdmin(admin.ModelAdmin):
     list_display = ('previous_state_attribute', 'previous_state_value', 'new_state_attribute', 'new_state_value', 'tracker', 'date_of_modification')
+    readonly_fields = ('previous_state_attribute', 'previous_state_value', 'new_state_attribute', 'new_state_value', 'tracker', 'date_of_modification')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 admin.site.register(School)
