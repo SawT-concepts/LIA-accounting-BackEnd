@@ -6,10 +6,9 @@ from Main.models import PaymentStatus
 
 @receiver(post_save, sender=Student)
 def create_student_payment_info(sender, instance, created, **kwargs):
-    if created: 
+    if created:
         try:
             amount_in_debt = instance.calculate_basic_amount_in_debt()
-            print("wallow wallow")
             print(amount_in_debt)
             payment_status = PaymentStatus.objects.create(student=instance, amount_in_debt=amount_in_debt)
             payment_status.save()

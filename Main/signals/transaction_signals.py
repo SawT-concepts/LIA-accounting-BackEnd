@@ -101,7 +101,7 @@ def update_operations_account_on_transaction(sender, instance, created, **kwargs
         else:
             notification_category['category'] = 'edited'
 
-        # Put this in a background task
+        #todo--- Put this in a background task
         NotificationManager.create_notification(
             notification_category=notification_category,
             transaction=instance,
@@ -111,6 +111,7 @@ def update_operations_account_on_transaction(sender, instance, created, **kwargs
 
     # Update the operations account if an operation type is determined
     if operation_type:
+        #todo--- put a background task here 
         update_operations_account(
             amount=instance.amount,
             school_id=instance.school.id,
