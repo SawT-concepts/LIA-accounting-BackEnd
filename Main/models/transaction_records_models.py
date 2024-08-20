@@ -16,7 +16,9 @@ class Operations_account_transaction_record(models.Model):
         ("DEBIT", "DEBIT"),
     )
     Status_choice = (
-        ("PENDING", "PENDING"),
+        ("PENDING_APPROVAL", "PENDING_APPROVAL"),
+        ("PENDING_EDIT", "PENDING_EDIT"),
+        ("PENDING_DELETE", "PENDING_DELETE"),
         ("INITIALIZED", "INITIALIZED"),
         ("SUCCESS", "SUCCESS"),
         ("FAILED", "FAILED"),
@@ -42,12 +44,13 @@ class Operations_account_transaction_record(models.Model):
     name_of_reciever = models.CharField(
         max_length=100, blank=False, null=False)
     account_number_of_reciever = models.CharField(
-        max_length=20, null=False, blank=True)
-    bank = models.ForeignKey("Paystack.Bank",  on_delete=models.CASCADE, null=True)
+        max_length=20, null=True, blank=True)
+    bank = models.ForeignKey("Paystack.Bank",  on_delete=models.CASCADE, blank=True, null=True)
 
     #paystack
     customer_transaction_id = models.CharField(max_length=50, null=True, blank=True)
     reference = models.CharField( blank=True, max_length=50)
+
 
     # ? Methods
 
@@ -98,7 +101,35 @@ class Operations_account_transaction_record(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.transaction_type} transaction {self.school.name}'
+        return f'{self.reason}' f'{self.transaction_type} transaction {self.school.name}'
+
+
+class Operations_account_transaction_modification_tracker (models.Model):
+    transaction = models.OneToOneField(Operations_account_transaction_record, on_delete=models.CASCADE)
+
+
+class Operations_account_transaction_records_edited_fields (models.Model):
+    ATTRIBUTE_CHOICES = (
+        ("amount", "amount"),
+        ("particulars", "particulars"),
+        ("reason", "reason"),
+        ("name_of_reciever", "name_of_reciever"),
+        ("account_number_of_reciever", "account_number_of_reciever"),
+        ("bank", "bank"),
+    )
+
+    previous_state_attribute = models.CharField(max_length=50, choices=ATTRIBUTE_CHOICES)
+    previous_state_value = models.CharField( max_length=50)
+    new_state_attribute = models.CharField(max_length=50, choices=ATTRIBUTE_CHOICES)
+    new_state_value = models.CharField(max_length=50)
+    tracker = models.ForeignKey(Operations_account_transaction_modification_tracker, on_delete=models.CASCADE)
+    date_of_modification = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.previous_state_attribute} {self.previous_state_value} {self.new_state_attribute} {self.new_state_value}'
+
+
+
 
 
 class Capital_account_transaction_record (models.Model):

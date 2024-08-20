@@ -61,20 +61,20 @@ class GetAmountAvailableOperationsAccount(APIView):
 
 
 class GetOperationsAndCenteralAccountTotal(APIView):
-    permission_classes = [IsAuthenticated]    
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user_school = get_user_school(request.user)
         operations_account = get_object_or_404(Operations_account, school=user_school)
         central_account = get_object_or_404(Capital_Account, school=user_school)
-        
+
         data = {
             'operations_account': operations_account,
             'central_account': central_account
         }
-        
+
         serializer = OperationsAndCapitalAccountSerializer(data)
-        
+
         return Response(serializer.data, status=HTTP_200_OK)
 
 
@@ -116,10 +116,10 @@ class GetTransactionSevenDaysAgo (APIView):
             }
 
             return Response(data, status=HTTP_200_OK)
-        
+
         except PermissionDenied:
             return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
-        
+
 
 
 
@@ -183,6 +183,7 @@ class ViewAndModifyCashTransaction(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         try:
+            print("editing a transaction record")
             check_account_type(request.user, account_type)
             instance = self.get_object()
             user_school = get_user_school(request.user)
@@ -196,13 +197,10 @@ class ViewAndModifyCashTransaction(viewsets.ModelViewSet):
 
             #refactor this
             if serializer.is_valid():
-                if serializer.validated_data == "CANCELLED":
+                if serializer.validated_data == "PENDING_DELETE" or serializer.validated_data == "PENDING_EDIT":
                     serializer.save()
                 else:
-                    operation_type = "ADD"
                     instance = self.get_object()
-
-                    update_operations_account(instance.amount, user_school.id, operation_type)
                     serializer.save(status="PENDING")
                 # initiate a notification here later to head teacher
                 #! reduce amount from operations account
@@ -283,7 +281,7 @@ class GetIncomeGraph (APIView):
     def get (self, request):
         try:
             check_account_type(request.user, account_type)
-            
+
         except PermissionDenied:
             return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
@@ -299,12 +297,12 @@ class GetParticularsSummary(APIView):
         operations_account_transaction_list = Operations_account_transaction_record.objects.filter(school=user_school)
 
         summary_dict = get_transaction_summary_by_header(operations_account_transaction_list)
-        
+
         # Convert the summary dictionary to a list of dictionaries suitable for the serializer
         summary_list = [
             {'particulars_name': key, **value}
             for key, value in summary_dict.items()
         ]
-        
+
         serializer = PercentageSummarySerializer(summary_list, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
