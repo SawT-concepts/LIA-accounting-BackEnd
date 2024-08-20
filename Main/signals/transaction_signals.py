@@ -1,22 +1,36 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_save
 from Api.helper_functions.main import OperationType, update_operations_account
-from Main.models.transaction_records_models import Operations_account_transaction_record
+from Main.models.transaction_records_models import Operations_account_transaction_modification_tracker, Operations_account_transaction_record, Operations_account_transaction_records_edited_fields
 
 @receiver(pre_save, sender=Operations_account_transaction_record)
 def track_previous_amount(sender, instance, **kwargs):
     """
-    Track the previous amount before saving the transaction to handle the PENDING_EDIT status.
+    Track the previous amount and changes before saving the transaction.
     """
-    if instance.pk:
-        try:
-            # Get the previous instance before the update
-            previous_instance = sender.objects.get(pk=instance.pk)
-            instance._previous_amount = previous_instance.amount
-        except sender.DoesNotExist:
-            instance._previous_amount = 0
-    else:
-        instance._previous_amount = 0
+    if not instance.pk:
+        return
+
+    try:
+        previous_instance = sender.objects.get(pk=instance.pk)
+        instance._previous_amount = previous_instance.amount
+
+        fields_to_check = ['amount', 'particulars', 'reason', 'name_of_reciever', 'account_number_of_reciever', 'bank']
+        changed_fields = [field for field in fields_to_check if getattr(previous_instance, field) != getattr(instance, field)]
+
+        if changed_fields:
+            tracker, _ = Operations_account_transaction_modification_tracker.objects.get_or_create(transaction=instance)
+
+            for field in changed_fields:
+                Operations_account_transaction_records_edited_fields.objects.create(
+                    tracker=tracker,
+                    previous_state_attribute=field,
+                    previous_state_value=str(getattr(previous_instance, field)),
+                    new_state_attribute=field,
+                    new_state_value=str(getattr(instance, field))
+                )
+    except sender.DoesNotExist:
+        pass
 
 @receiver(post_save, sender=Operations_account_transaction_record)
 def update_operations_account_on_transaction(sender, instance, created, **kwargs):
@@ -39,10 +53,15 @@ def update_operations_account_on_transaction(sender, instance, created, **kwargs
 
     # Handle PENDING_EDIT: Add previous amount, then subtract the new amount
     elif instance.status == "PENDING_EDIT":
-        print("Instance is being deleted")
+        tracker = Operations_account_transaction_modification_tracker.objects.get(transaction=instance)
+        previous_amount = int(Operations_account_transaction_records_edited_fields.objects.get(
+            tracker=tracker,
+            previous_state_attribute='amount'
+        ).previous_state_value)
+
         # First, add back the previous amount
         update_operations_account(
-            amount=instance._previous_amount,
+            amount=previous_amount,
             school_id=instance.school.id,
             operation_type=OperationType.ADD.value
         )

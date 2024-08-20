@@ -4,6 +4,8 @@ from .models import (
     School,
     Operations_account,
     Operations_account_transaction_record,
+    Operations_account_transaction_modification_tracker,
+    Operations_account_transaction_records_edited_fields,
     Capital_Account,
     Capital_account_transaction_record,
     Particulars,
@@ -43,3 +45,5 @@ admin.site.register(OtherFeeCategory)
 admin.site.register(FeesCategory)
 admin.site.register(SchoolConfig)
 admin.site.register(PaymentStatus)
+admin.site.register(Operations_account_transaction_modification_tracker)
+admin.site.register(Operations_account_transaction_records_edited_fields)

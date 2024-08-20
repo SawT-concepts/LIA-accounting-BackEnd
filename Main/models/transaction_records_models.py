@@ -107,6 +107,9 @@ class Operations_account_transaction_record(models.Model):
 class Operations_account_transaction_modification_tracker (models.Model):
     transaction = models.OneToOneField(Operations_account_transaction_record, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f'{self.transaction.reason} {self.transaction.school.name}'
+
 
 class Operations_account_transaction_records_edited_fields (models.Model):
     ATTRIBUTE_CHOICES = (
