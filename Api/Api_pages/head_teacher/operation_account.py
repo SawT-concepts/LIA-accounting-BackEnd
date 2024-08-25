@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.status import *
-from Api.Api_pages.operations.serializers import CashTransactionReadSerializer
+from Api.Api_pages.operations.serializers import CashTransactionReadSerializer, TransactionModificationReadSerializer
 from rest_framework import status, viewsets
 from rest_framework.views import APIView
 # from Background_Tasks.tasks import
@@ -16,6 +16,25 @@ from django.db import models
 account_type = "PRINCIPAL"
 
 
+class HeadTeacherGetAllPendingTransactionModification(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            check_account_type(request.user, account_type)
+            user_school = get_user_school(request.user)
+            pending_transaction_list = Operations_account_transaction_modification_tracker.objects.filter(
+                transaction__school=user_school, status="PENDING")
+            serializer = TransactionModificationReadSerializer(
+                pending_transaction_list, many=True)
+            return Response(serializer.data, status=HTTP_200_OK)
+
+        except PermissionDenied:
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+        except Exception as e:
+            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class HeadTeacherGetAllPendingTransaction(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -24,7 +43,7 @@ class HeadTeacherGetAllPendingTransaction(APIView):
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
             pending_transaction_list = Operations_account_transaction_record.objects.filter(
-                school=user_school, status="PENDING", transaction_type="CASH")
+                school=user_school, status=["PENDING_APPROVAL", "PENDING_EDIT", "PENDING_DELETE"], transaction_type="CASH")
 
             if pending_transaction_list is None:
                 return Response(status=HTTP_404_NOT_FOUND, data={"message": "No pending transaction."})
@@ -35,6 +54,7 @@ class HeadTeacherGetAllPendingTransaction(APIView):
 
         except PermissionDenied:
             return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+
 
 
 class TransactionStatus(models.TextChoices):

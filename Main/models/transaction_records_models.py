@@ -32,7 +32,7 @@ class Operations_account_transaction_record(models.Model):
     transaction_type = models.CharField(
         max_length=100, choices=Transaction_type)
     status = models.CharField(choices=Status_choice,
-                              max_length=50, default="PENDING")
+                              max_length=50, default="PENDING_APPROVAL")
     transaction_category = models.CharField(
         max_length=50, choices=Transaction_category)
     particulars = models.ForeignKey(
@@ -114,6 +114,7 @@ class Operations_account_transaction_modification_tracker (models.Model):
     transaction = models.ForeignKey(Operations_account_transaction_record, on_delete=models.CASCADE)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
     head_teacher_comment = models.TextField(null=True, blank=True)
+    date_of_modification = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return f'{self.transaction.reason} {self.transaction.school.name}'
@@ -129,6 +130,7 @@ class Operations_account_transaction_records_edited_fields (models.Model):
         ("bank", "bank"),
         ("time", "time"),
     )
+
 
     previous_state_attribute = models.CharField(max_length=50, choices=ATTRIBUTE_CHOICES)
     previous_state_value = models.CharField( max_length=50)

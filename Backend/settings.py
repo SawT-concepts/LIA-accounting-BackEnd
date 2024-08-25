@@ -92,14 +92,23 @@ CHANNEL_LAYERS = {
 # }
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'railway',
+#         'USER': 'postgres',
+#         'PASSWORD': 'UPSSxFHQphBByVxFErFVDlHtLqPViPiO',
+#         'HOST': 'viaduct.proxy.rlwy.net',
+#         'PORT': '26969',
+#     }
+
+# }
+
+# SQLite configuration
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'railway',
-        'USER': 'postgres',
-        'PASSWORD': 'UPSSxFHQphBByVxFErFVDlHtLqPViPiO',
-        'HOST': 'viaduct.proxy.rlwy.net',
-        'PORT': '26969',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

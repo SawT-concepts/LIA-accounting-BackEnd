@@ -135,25 +135,24 @@ class GetAllCashTransactions(APIView):
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
-            # Check if the 'pending' argument is in the request's query parameters
             if pending == "pending":
-                # Modify the query for pending transactions
-                operations_account_cash_transaction = Operations_account_transaction_record.get_transaction(
-                    school=user_school, transaction_type="CASH"
-                ).order_by('-time').filter(status="PENDING")
-
+                operations_account_cash_transaction = Operations_account_transaction_record.objects.filter(
+                    school=user_school, transaction_type="CASH",
+                    status__in=["PENDING_APPROVAL", "PENDING_DELETE", "PENDING_EDIT"]
+                ).order_by('-time')
             else:
                 operations_account_cash_transaction = Operations_account_transaction_record.get_transaction(
-                    school=user_school, transaction_type="CASH").order_by('-time').filter(status="SUCCESS")
+                    school=user_school, transaction_type="CASH"
+                ).order_by('-time').filter(status="SUCCESS")
 
-            print(operations_account_cash_transaction)
             serializer = OperationsAccountCashTransactionRecordSerializer(
-                operations_account_cash_transaction, many=True)
-
+                operations_account_cash_transaction, many=True
+            )
             return Response(serializer.data, status=HTTP_200_OK)
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
-
+            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({"message": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ViewAndModifyCashTransaction(viewsets.ModelViewSet):
@@ -183,25 +182,16 @@ class ViewAndModifyCashTransaction(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         try:
-            print("editing a transaction record")
             check_account_type(request.user, account_type)
             instance = self.get_object()
-            user_school = get_user_school(request.user)
-
-
-            # Merge current instance data with incoming data
             merged_data = {**self.get_serializer(instance).data, **request.data}
-
-            # Now validate this merged data with your serializer
             serializer = self.get_serializer(instance, data=merged_data)
-
-            #refactor this
             if serializer.is_valid():
-                if serializer.validated_data == "PENDING_DELETE" or serializer.validated_data == "PENDING_EDIT":
+                if serializer.validated_data["status"] == "PENDING_DELETE" or serializer.validated_data["status"] == "PENDING_EDIT":
                     serializer.save()
                 else:
                     instance = self.get_object()
-                    serializer.save(status="PENDING")
+                    serializer.save(status="PENDING_APPROVAL")
                 # initiate a notification here later to head teacher
                 #! reduce amount from operations account
                 return Response({"message": "Successfully modified"}, status=status.HTTP_200_OK)
@@ -249,7 +239,7 @@ class CreateCashTransaction (APIView):
             check_account_type(request.user, account_type)
             serializer = CashTransactionWriteSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save(status="PENDING", school=get_user_school(
+                serializer.save(status="PENDING_APPROVAL", school=get_user_school(
                     request.user), transaction_type="CASH", transaction_category="DEBIT")
                 # initiate a notification here later to the head teacher
                 return Response({"message": "Transaction created successfully"}, status=status.HTTP_201_CREATED)
@@ -294,7 +284,7 @@ class GetParticularsSummary(APIView):
 
     def get(self, request):
         user_school = get_user_school(request.user)
-        operations_account_transaction_list = Operations_account_transaction_record.objects.filter(school=user_school)
+        operations_account_transaction_list = Operations_account_transaction_record.objects.filter(school=user_school, status="SUCCESS")
 
         summary_dict = get_transaction_summary_by_header(operations_account_transaction_list)
 

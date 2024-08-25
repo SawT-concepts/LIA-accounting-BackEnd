@@ -37,7 +37,7 @@ class  OperationsAccountTotalSerializer(serializers.ModelSerializer):
 
     def get_total_amount_available(self, obj):
         return obj.get_total_amount_available()
-    
+
 
 class  CentralAccountTotalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,11 +63,23 @@ class CashandTransactionTotalSerializer (serializers.Serializer):
 class OperationsAccountCashTransactionRecordSerializer(serializers.ModelSerializer):
     particulars = serializers.CharField(
         source='particulars.name', read_only=True)
+    transaction_modification = serializers.SerializerMethodField()
 
     class Meta:
         model = Operations_account_transaction_record
         fields = ('id', 'time', 'amount', 'transaction_category',
-                  'particulars', 'reason', 'name_of_reciever', 'status')
+                  'particulars', 'reason', 'name_of_reciever', 'status', 'transaction_modification')
+
+
+    def get_transaction_modification(self, obj):
+        modifications = Operations_account_transaction_modification_tracker.objects.filter(
+            transaction=obj,
+            status='PENDING'
+        )
+        if modifications.exists():
+            return TransactionModificationReadSerializer(modifications.first()).data
+        return None
+
 
 
 class CashTransactionReadSerializer (serializers.ModelSerializer):
@@ -78,6 +90,23 @@ class CashTransactionReadSerializer (serializers.ModelSerializer):
         model = Operations_account_transaction_record
         fields = ('id', 'time', 'amount', 'transaction_category',
                   'particulars', 'name_of_reciever', 'status', 'reason')
+
+
+
+class TransactionEditedFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Operations_account_transaction_records_edited_fields
+        fields = '__all__'
+
+
+class TransactionModificationReadSerializer(serializers.ModelSerializer):
+    edited_field_list = serializers.SerializerMethodField()
+    class Meta:
+        model = Operations_account_transaction_modification_tracker
+        fields = ('id', 'transaction', 'status', 'head_teacher_comment', 'date_of_modification', 'edited_field_list')
+
+    def get_edited_field_list(self, obj):
+        return TransactionEditedFieldSerializer(Operations_account_transaction_records_edited_fields.objects.filter(tracker=obj), many=True).data
 
 
 class CashTransactionWriteSerializer (serializers.ModelSerializer):

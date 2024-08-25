@@ -108,7 +108,8 @@ urlpatterns = [
          HeadTeacherModifyTransaction.as_view(), name='head_teacher_modify_transaction'),
     path('head_teacher/bulk_modify_transaction/<str:status>',
          HeadTeacherBulkModifyTransaction.as_view(), name='head_teacher_bulk_modify_transaction'),
-
+    path('head_teacher/get_pending_transaction_modification',
+         HeadTeacherGetAllPendingTransactionModification.as_view(), name='head_teacher_get_all_pending_transaction_modification'),
 
     # school fees payment
     path('payment/get_token', LoginPaymentPortal.as_view(),

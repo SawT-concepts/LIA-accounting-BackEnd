@@ -41,6 +41,11 @@ class NotificationManager:
     def get_transaction_deleted_template(transaction):
         return f"Transaction deleted: {transaction.reason} for {transaction.amount} on {transaction.time.strftime('%Y-%m-%d %H:%M:%S')}."
 
+    @staticmethod
+    def get_transaction_success_template(transaction):
+        return f"Transaction approved: {transaction.reason} for {transaction.amount} on {transaction.time.strftime('%Y-%m-%d %H:%M:%S')}."
+
+
     @classmethod
     def create_notification(cls, notification_category, recipients, transaction, changed_fields=None):
 
@@ -51,6 +56,9 @@ class NotificationManager:
             message = cls.get_transaction_edited_template(transaction, changed_fields)
         elif notification_category['category'] == 'cancelled':
             message = cls.get_transaction_deleted_template(transaction)
+        elif notification_category['category'] == 'success':
+            message = cls.get_transaction_success_template(transaction)
+
         else:
             raise ValueError("Invalid notification type")
 

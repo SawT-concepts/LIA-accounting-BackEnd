@@ -10,6 +10,7 @@ from Main.models.transaction_records_models import Operations_account_transactio
 def track_previous_amount(sender, instance, **kwargs):
     """
     Track the previous amount and changes before saving the transaction.
+    ☑️this works fine.. ive tested it
     """
     if instance.pk:
         try:
@@ -35,7 +36,8 @@ def track_previous_amount(sender, instance, **kwargs):
                     )
 
         except Operations_account_transaction_record.DoesNotExist:
-            pass  # This shouldn't happen, but just in case
+            pass
+
 
 
 @receiver(post_save, sender=Operations_account_transaction_record)
@@ -45,63 +47,39 @@ def update_operations_account_on_transaction(sender, instance, created, **kwargs
     Handles 'SUCCESS', 'CANCELLED', 'PENDING_DELETE', and 'PENDING_EDIT' statuses
     to update or reverse the transaction effect.
 
+    omo men😅... i dont even know wtf i had in mind while creating this function.
+    its sha not working that was why i abandoned it!
+
     Parameters:
         sender (Model): The model class that sent the signal.
         instance (Operations_account_transaction_record): The actual instance being saved.
         created (bool): A boolean indicating whether the instance was created.
         **kwargs: Additional keyword arguments.
     """
-    operation_type = None
+    print("Alfred hichok")
+    print(instance.status)
     notification_recipients = CustomUser.objects.filter(school=instance.school)
 
-    if instance.status == Operations_account_transaction_record.Status_choice[0][0]:
-        # Awaiting approval from the head teacher
-        notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[3][0])
-        operation_type = OperationType.ADD.value
-
-    elif instance.status in [Operations_account_transaction_record.Status_choice[3][0],  # PENDING_DELETE
-                             Operations_account_transaction_record.Status_choice[4][0]]: # PENDING_EDIT
-        operation_type = OperationType.ADD.value
+    if instance.status == "PENDING_APPROVAL" or instance.status == "PENDING_EDIT" or instance.status == "PENDING_DELETE":
         notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[3][0])
 
-        if instance.status == Operations_account_transaction_record.Status_choice[4][0]:
-            previous_amount = instance._previous_amount
+    if instance.status == "CANCELLED" or instance.status == "SUCCESS":
+        notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[0][0])
 
-            # Add back the previous amount
-            update_operations_account(
-                amount=previous_amount,
-                school_id=instance.school.id,
-                operation_type=OperationType.ADD.value
-            )
-            operation_type = OperationType.SUBTRACT.value
 
-    elif instance.status == Operations_account_transaction_record.Status_choice[6][0]:  # CANCELLED
-        operation_type = OperationType.ADD.value
+    notification_category = {
+        'type_of_notification': Notification.NOTIFICATION_TYPE_CHOICES[0][0],
+        'category': 'edited' if instance.status == "PENDING_APPROVAL" or instance.status == "PENDING_EDIT" else 'cancelled' if instance.status == "CANCELLED" else 'success'
+    }
 
-    elif instance.status == Operations_account_transaction_record.Status_choice[5][0]:  # SUCCESS
-        operation_type = OperationType.ADD.value if instance.transaction_category == Operations_account_transaction_record.Transaction_category[0][0] else OperationType.SUBTRACT.value
-
+    changed_fields = None
     if notification_recipients.exists():
-        changed_fields = None
         if hasattr(instance, '_tracker'):
             changed_fields = Operations_account_transaction_records_edited_fields.objects.filter(
                 tracker=instance._tracker
             )
 
-        notification_category = {
-            'type_of_notification': Notification.NOTIFICATION_TYPE_CHOICES[0][0]
-        }
-
-        if instance.status == Operations_account_transaction_record.Status_choice[5][0]:  # SUCCESS
-            notification_category['category'] = 'success'
-            notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[0][0])
-        elif instance.status == Operations_account_transaction_record.Status_choice[6][0]:  # CANCELLED
-            notification_category['category'] = 'cancelled'
-            notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[0][0])
-        else:
-            notification_category['category'] = 'edited'
-
-        #todo--- Put this in a background task
+        # #todo--- Put this in a background task
         NotificationManager.create_notification(
             notification_category=notification_category,
             transaction=instance,
@@ -109,11 +87,11 @@ def update_operations_account_on_transaction(sender, instance, created, **kwargs
             changed_fields=changed_fields
         )
 
-    # Update the operations account if an operation type is determined
-    if operation_type:
-        #todo--- put a background task here 
-        update_operations_account(
-            amount=instance.amount,
-            school_id=instance.school.id,
-            operation_type=operation_type
-        )
+
+
+
+            # update_operations_account(
+            #     amount=instance.amount,
+            #     school_id=instance.school.id,
+            #     operation_type=operation_type
+            # )
