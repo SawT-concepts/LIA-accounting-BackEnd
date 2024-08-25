@@ -2,34 +2,63 @@ from django.utils import timezone
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.status import *
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.views import APIView
 # from Background_Tasks.tasks import
 from django.core.cache import cache
 from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
 from Api.helper_functions.payment_section.main import get_student_id_from_request
-from Main.models import Payroll, Operations_account_transaction_record
+from Main.models import Student, SchoolConfig, PaymentStatus, FeesCategory, SchoolFeesCategory, UniformAndBooksFeeCategory, BusFeeCategory, OtherFeeCategory, PaymentHistory
 from Api.helper_functions.main import *
 from Api.helper_functions.auth_methods import *
 from Api.helper_functions.directors.main import *
 from Api.Api_pages.operations.serializers import *
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import get_user_model
-from rest_framework.exceptions import APIException
 from Paystack.transfers import *
 from django.http import Http404
+from typing import Dict, Any, Optional
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from django.db.models import QuerySet
 
 
 class LoginPaymentPortal(APIView):
-    '''
+    """
     This API is responsible for collecting user information and logging them in if their credentials are correct.
-    '''
+    """
 
-    def post(self, request):
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'registration_number': openapi.Schema(type=openapi.TYPE_STRING, description='Student registration number'),
+            },
+            required=['registration_number']
+        ),
+        responses={
+            200: openapi.Response('Successful login', openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'token': openapi.Schema(type=openapi.TYPE_STRING, description='Student ID token'),
+                }
+            )),
+            404: 'Wrong Input',
+            500: 'Internal Server Error',
+        }
+    )
+    def post(self, request: Any) -> Response:
+        """
+        Handle POST request for login.
+
+        Args:
+            request (Any): The request object.
+
+        Returns:
+            Response: The response object containing the token or error message.
+        """
         try:
-            registration_number = request.data.get('registration_number')
-            student_instance = get_object_or_404(
+            registration_number: str = request.data.get('registration_number')
+            student_instance: Student = get_object_or_404(
                 Student, registration_number=registration_number)
             return Response({"token": student_instance.student_id}, status=status.HTTP_200_OK)
 
@@ -40,17 +69,38 @@ class LoginPaymentPortal(APIView):
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GetStudentInfo (APIView):
-    '''This API gets information about the student... first name, last name etc'''
+class GetStudentInfo(APIView):
+    """
+    This API gets information about the student... first name, last name etc
+    """
 
-    def get(self, request, student_id):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('student_id', openapi.IN_PATH, description="Student ID", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: StudentSerializer,
+            400: 'Bad Request',
+            404: 'Student Not Found',
+            500: 'Internal Server Error',
+        }
+    )
+    def get(self, request: Any, student_id: str) -> Response:
+        """
+        Handle GET request for student information.
 
+        Args:
+            request (Any): The request object.
+            student_id (str): The ID of the student.
+
+        Returns:
+            Response: The response object containing student information or error message.
+        """
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Assuming you have a utility function to retrieve a student by ID
-            student = get_student_id_from_request(student_id)
+            student: Student = get_student_id_from_request(student_id)
             serializer = StudentSerializer(student)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -62,18 +112,39 @@ class GetStudentInfo (APIView):
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GetSchoolStatus (APIView):
-    '''This is responsible for getting information about the school. stuffs like school current term and academic status'''
+class GetSchoolStatus(APIView):
+    """
+    This is responsible for getting information about the school. stuffs like school current term and academic status
+    """
 
-    def get(self, request, student_id):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('student_id', openapi.IN_PATH, description="Student ID", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: SchoolConfigSerializer,
+            400: 'Bad Request',
+            404: 'Student Not Found',
+            500: 'Internal Server Error',
+        }
+    )
+    def get(self, request: Any, student_id: str) -> Response:
+        """
+        Handle GET request for school status.
 
+        Args:
+            request (Any): The request object.
+            student_id (str): The ID of the student.
+
+        Returns:
+            Response: The response object containing school configuration or error message.
+        """
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Assuming you have a utility function to retrieve a student by ID
-            student = get_student_id_from_request(student_id)
-            school_config = SchoolConfig.objects.get(school=student.school)
+            student: Student = get_student_id_from_request(student_id)
+            school_config: SchoolConfig = SchoolConfig.objects.get(school=student.school)
 
             serializer = SchoolConfigSerializer(school_config)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -86,20 +157,37 @@ class GetSchoolStatus (APIView):
 
 
 class GetUserPaymentStatus(APIView):
-    '''This API is responsible for getting the student's payment status'''
+    """
+    This API is responsible for getting the student's payment status
+    """
 
-    def get(self, request, student_id):
-        # Extract student ID from request headers
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('student_id', openapi.IN_PATH, description="Student ID", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: PaymentStatusSerializer,
+            400: 'Bad Request',
+            500: 'Internal Server Error',
+        }
+    )
+    def get(self, request: Any, student_id: str) -> Response:
+        """
+        Handle GET request for user payment status.
 
+        Args:
+            request (Any): The request object.
+            student_id (str): The ID of the student.
+
+        Returns:
+            Response: The response object containing payment status or error message.
+        """
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Assuming you have a utility function to retrieve a student by ID
-            student = get_student_id_from_request(student_id)
-
-            # Assuming PaymentStatus is related to Student and has a foreign key to Student
-            payment_status = get_object_or_404(PaymentStatus, student=student)
+            student: Student = get_student_id_from_request(student_id)
+            payment_status: PaymentStatus = get_object_or_404(PaymentStatus, student=student)
             serializer = PaymentStatusSerializer(payment_status)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -108,26 +196,47 @@ class GetUserPaymentStatus(APIView):
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GetSchoolFeesBreakDownCharges (APIView):
-    '''This api is responsible for getting the student's school fees break down and levy'''
+class GetSchoolFeesBreakDownCharges(APIView):
+    """
+    This api is responsible for getting the student's school fees break down and levy
+    """
 
-    def get(self, request, student_id):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('student_id', openapi.IN_PATH, description="Student ID", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: SchoolFeeCategorySerializer(many=True),
+            400: 'Bad Request',
+            500: 'Internal Server Error',
+        }
+    )
+    def get(self, request: Any, student_id: str) -> Response:
+        """
+        Handle GET request for school fees breakdown charges.
 
+        Args:
+            request (Any): The request object.
+            student_id (str): The ID of the student.
+
+        Returns:
+            Response: The response object containing school fees breakdown or error message.
+        """
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            student = get_student_id_from_request(student_id)
-            school = student.school.id
+            student: Student = get_student_id_from_request(student_id)
+            school: int = student.school.id
 
             print(school)
-            current_term = SchoolConfig.objects.get(school=school).term
-            grade = student.grade
+            current_term: str = SchoolConfig.objects.get(school=school).term
+            grade: str = student.grade
 
-            fees_category = FeesCategory.objects.get(
+            fees_category: FeesCategory = FeesCategory.objects.get(
                 school=school, category_type=category_types[0][0], grade=grade)
 
-            school_fees_category = SchoolFeesCategory.objects.filter(
+            school_fees_category: QuerySet[SchoolFeesCategory] = SchoolFeesCategory.objects.filter(
                 term=current_term, category=fees_category)
 
             serializer = SchoolFeeCategorySerializer(
@@ -138,62 +247,97 @@ class GetSchoolFeesBreakDownCharges (APIView):
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GetUniformAndBookFeeBreakDownCharges (APIView):
-    '''This api is responsible for getting the student's uniform fees break down'''
+class GetUniformAndBookFeeBreakDownCharges(APIView):
+    """
+    This api is responsible for getting the student's uniform fees break down
+    """
 
-    def get(self, request, student_id):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('student_id', openapi.IN_PATH, description="Student ID", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: UniformAndBookFeeCategorySerializer(many=True),
+            400: 'Bad Request',
+            500: 'Internal Server Error',
+        }
+    )
+    def get(self, request: Any, student_id: str) -> Response:
+        """
+        Handle GET request for uniform and book fee breakdown charges.
 
+        Args:
+            request (Any): The request object.
+            student_id (str): The ID of the student.
+
+        Returns:
+            Response: The response object containing uniform and book fee breakdown or error message.
+        """
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            student = get_student_id_from_request(student_id)
-            school = student.school.id
-            grade = student.grade
-
+            student: Student = get_student_id_from_request(student_id)
+            school: int = student.school.id
+            grade: str = student.grade
 
             print(category_types[1][1])
             print(school)
             print(grade)
 
-
-            fees_category = FeesCategory.objects.get(
+            fees_category: FeesCategory = FeesCategory.objects.get(
                 school=school, category_type=category_types[1][1], grade=grade)
-            
 
-      
-
-            uniform_fees_category = UniformAndBooksFeeCategory.objects.filter(
+            uniform_fees_category: QuerySet[UniformAndBooksFeeCategory] = UniformAndBooksFeeCategory.objects.filter(
               category=fees_category)
             print("uniform part")
             print(uniform_fees_category)
 
-        
             serializer = UniformAndBookFeeCategorySerializer(
                 uniform_fees_category, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-
 
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GetBusFeeBreakDownCharges (APIView):
-    '''This api is responsible for getting the student's bus fees break down'''
+class GetBusFeeBreakDownCharges(APIView):
+    """
+    This api is responsible for getting the student's bus fees break down
+    """
 
-    def get(self, request, student_id):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('student_id', openapi.IN_PATH, description="Student ID", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: BusFeeCategorySerializer(many=True),
+            400: 'Bad Request',
+            500: 'Internal Server Error',
+        }
+    )
+    def get(self, request: Any, student_id: str) -> Response:
+        """
+        Handle GET request for bus fee breakdown charges.
 
+        Args:
+            request (Any): The request object.
+            student_id (str): The ID of the student.
+
+        Returns:
+            Response: The response object containing bus fee breakdown or error message.
+        """
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            student = get_student_id_from_request(student_id)
-            school = student.school
-            current_term = SchoolConfig.objects.get(school=school).term
-            grade = student.grade
+            student: Student = get_student_id_from_request(student_id)
+            school: Any = student.school
+            current_term: str = SchoolConfig.objects.get(school=school).term
+            grade: str = student.grade
 
-            fees_category = FeesCategory.objects.get(
+            fees_category: FeesCategory = FeesCategory.objects.get(
                 school=school, category_type=category_types[2][1], grade=grade)
 
-            bus_fee_category = BusFeeCategory.objects.filter(
+            bus_fee_category: QuerySet[BusFeeCategory] = BusFeeCategory.objects.filter(
                 category=fees_category, term=current_term
             )
 
@@ -204,24 +348,43 @@ class GetBusFeeBreakDownCharges (APIView):
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GetOtherPaymentBreakDownCharges (APIView):
-    '''This api is responsible for getting the student's  other payment break down'''
+class GetOtherPaymentBreakDownCharges(APIView):
+    """
+    This api is responsible for getting the student's other payment break down
+    """
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('student_id', openapi.IN_PATH, description="Student ID", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: OtherFeeCategorySerializer(many=True),
+            400: 'Bad Request',
+            500: 'Internal Server Error',
+        }
+    )
+    def get(self, request: Any, student_id: str) -> Response:
+        """
+        Handle GET request for other payment breakdown charges.
 
-    def get(self, request, student_id):
+        Args:
+            request (Any): The request object.
+            student_id (str): The ID of the student.
 
-
+        Returns:
+            Response: The response object containing other payment breakdown or error message.
+        """
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            student = get_student_id_from_request(student_id)
-            school = student.school
-            grade = student.grade
+            student: Student = get_student_id_from_request(student_id)
+            school: Any = student.school
+            grade: str = student.grade
 
-            fees_category = FeesCategory.objects.get(
+            fees_category: FeesCategory = FeesCategory.objects.get(
                 school=school, category_type=category_types[3][1], grade=grade)
 
-            other_fee_category = OtherFeeCategory.objects.filter(
+            other_fee_category: QuerySet[OtherFeeCategory] = OtherFeeCategory.objects.filter(
                 category=fees_category
             )
             serializer = OtherFeeCategorySerializer(
@@ -233,10 +396,36 @@ class GetOtherPaymentBreakDownCharges (APIView):
 
 
 class ProcessFeePayment(APIView):
-    '''This API is responsible for handling a compilation of all the fees for the student and processing the student's payment status'''
+    """
+    This API is responsible for handling a compilation of all the fees for the student and processing the student's payment status
+    """
 
-    def post(self, request):
-        student_id = request.META.get('STUDENT_ID')
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'BREAKDOWN': openapi.Schema(type=openapi.TYPE_OBJECT, description='Payment breakdown'),
+                'EMAIL': openapi.Schema(type=openapi.TYPE_STRING, description='User email'),
+            },
+            required=['BREAKDOWN', 'EMAIL']
+        ),
+        responses={
+            200: 'Payment history created successfully',
+            400: 'Bad Request',
+            500: 'Internal Server Error',
+        }
+    )
+    def post(self, request: Any) -> Response:
+        """
+        Handle POST request for processing fee payment.
+
+        Args:
+            request (Any): The request object.
+
+        Returns:
+            Response: The response object containing success message or error message.
+        """
+        student_id: Optional[str] = request.META.get('STUDENT_ID')
 
         if not student_id:
             return Response({"message": "No student ID provided in headers"}, status=status.HTTP_400_BAD_REQUEST)

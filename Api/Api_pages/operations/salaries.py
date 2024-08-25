@@ -1,27 +1,25 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.status import *
-from Api.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.views import APIView
 # from Background_Tasks.tasks import
-from django.core.cache import cache
-from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
-from Main.models import Staff, Payroll
+from Main.models import Staff, Payroll, Taxroll, Staff_type
 from Api.helper_functions.main import *
 from Api.helper_functions.auth_methods import *
 from Api.Api_pages.operations.serializers import *
-from django.http import Http404
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, PermissionDenied
 from rest_framework.decorators import api_view
 from Main.model_function.helper import generate_staffroll
 from django.db import transaction
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from typing import List, Dict, Any, Union
 
 account_type = "OPERATIONS"
 
@@ -33,7 +31,11 @@ class GetAllStaffs(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        operation_description="Get all active staff",
+        responses={200: StaffReadSerializer(many=True)}
+    )
+    def get(self, request: Any, *args: Any, **kwargs: Any) -> Response:
         try:
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
@@ -54,14 +56,18 @@ class GetAllStaffs(APIView):
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class AddAndEditStaff (APIView):
+class AddAndEditStaff(APIView):
     """
-        this api is responsible for adding a new staff 
-        this api is responsible for editing the details of the staff
+    API endpoint for adding a new staff or editing staff details.
     """
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    @swagger_auto_schema(
+        operation_description="Add a new staff",
+        request_body=StaffWriteSerializer,
+        responses={201: openapi.Response("Staff created successfully")}
+    )
+    def post(self, request: Any) -> Response:
         try:
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
@@ -71,7 +77,6 @@ class AddAndEditStaff (APIView):
                 data=data, context={'request': request})
 
             if serialized_data.is_valid():
-
                 verify_bank_account = resolve_bank_account(
                     serialized_data.validated_data['account_number'], serialized_data.validated_data['bank'].bank_code)
 
@@ -93,9 +98,13 @@ class AddAndEditStaff (APIView):
         except Exception as e:
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def patch(self, request):
+    @swagger_auto_schema(
+        operation_description="Edit staff details",
+        request_body=StaffWriteSerializer,
+        responses={200: openapi.Response("Staff edited successfully")}
+    )
+    def patch(self, request: Any) -> Response:
         try:
-            # Check if the authenticated user has the required account type.
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
 
@@ -121,10 +130,15 @@ class AddAndEditStaff (APIView):
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@swagger_auto_schema(
+    method='get',
+    operation_description="Get staff types",
+    responses={200: StaffTypeSerializer(many=True)}
+)
 @api_view(['GET'])
-def ShowStaffType(request):
+def ShowStaffType(request: Any) -> Response:
     '''
-        this API is responsible for getting the staff type
+    API endpoint for getting the staff types.
     '''
     try:
         check_account_type(request.user, account_type)
@@ -146,14 +160,17 @@ def ShowStaffType(request):
         return Response({"message": "An error occurred"}, status=HTTP_403_FORBIDDEN)
 
 
-class InitiatePayroll (APIView):
+class InitiatePayroll(APIView):
     '''
-        -The Api is responsible for initiating payroll instance
-        -(TODO) Also the would be a patch request to modify the staffs too
+    API endpoint for initiating a payroll instance.
     '''
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        operation_description="Initiate a new payroll",
+        responses={201: PayrollWriteSerializer()}
+    )
+    def post(self, request: Any, *args: Any, **kwargs: Any) -> Response:
         try:
             check_account_type(request.user, account_type)
             payroll_name = Payroll.generate_payroll_name()
@@ -186,8 +203,12 @@ class InitiatePayroll (APIView):
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GetPayrollDetails (APIView):
-    def get(self, request, payroll_id):
+class GetPayrollDetails(APIView):
+    @swagger_auto_schema(
+        operation_description="Get details of a specific payroll",
+        responses={200: PayrollSerializer()}
+    )
+    def get(self, request: Any, payroll_id: int) -> Response:
         try:
             check_account_type(request.user, account_type)
             payroll_instance = get_object_or_404(Payroll, id=payroll_id)
@@ -207,10 +228,14 @@ class GetPayrollDetails (APIView):
 
 class InitiateTaxroll(APIView):
     """
-    The API is responsible for initiating payroll instance.
+    API endpoint for initiating a taxroll instance from a payroll.
     """
 
-    def post(self, request, payroll_id, *args, **kwargs):
+    @swagger_auto_schema(
+        operation_description="Initiate a taxroll from a payroll",
+        responses={201: TaxRollReadSerializer()}
+    )
+    def post(self, request: Any, payroll_id: int, *args: Any, **kwargs: Any) -> Response:
         try:
             check_account_type(request.user, account_type)
             user_school = get_user_school(request.user)
@@ -238,10 +263,16 @@ class InitiateTaxroll(APIView):
             return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GenerateTransactionSummary (APIView):
-    '''this api is responsible for returning a TransactionSummary from an existing payroll transaction'''
+class GenerateTransactionSummary(APIView):
+    '''
+    API endpoint for generating a transaction summary from an existing payroll transaction.
+    '''
 
-    def get(self, request, payroll_id, *args, **kwargs):
+    @swagger_auto_schema(
+        operation_description="Generate transaction summary for a payroll",
+        responses={200: TransactionSummarySerializer()}
+    )
+    def get(self, request: Any, payroll_id: int, *args: Any, **kwargs: Any) -> Response:
         try:
             check_account_type(request.user, account_type)
             payroll_instance = get_object_or_404(Payroll, id=payroll_id)
@@ -271,9 +302,15 @@ class GenerateTransactionSummary (APIView):
 
 
 class OperationsGetAllPayroll(APIView):
-    '''This API is responsible for getting all SalaryPayments'''
+    '''
+    API endpoint for getting all salary payments.
+    '''
 
-    def get(self, request):
+    @swagger_auto_schema(
+        operation_description="Get all payrolls",
+        responses={200: PayrollSerializer(many=True)}
+    )
+    def get(self, request: Any) -> Response:
         try:
             check_account_type(self.request.user, account_type)
             user_school = get_user_school(self.request.user)
@@ -291,41 +328,35 @@ class OperationsGetAllPayroll(APIView):
             return Response({"message": "An error occurred: " + str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class RequeryFailedPayrollTransaction (APIView):
+class RequeryFailedPayrollTransaction(APIView):
     '''
-        this api is responsible for requerying failed payments
+    API endpoint for requerying failed payments.
     '''
 
-    def post(self, request, payroll_id):
+    @swagger_auto_schema(
+        operation_description="Requery failed payroll transactions",
+        responses={200: openapi.Response("Requery successful")}
+    )
+    def post(self, request: Any, payroll_id: int) -> Response:
         payroll = get_object_or_404(Payroll, id=payroll_id)
 
         staffs_failed = payroll.get_all_failed_staff_payment()
-        # todo:u Initiate bulk transaction and reupdate the staff payment status
-
-
-class GetPayrollDetails (APIView):
-
-    def get(self, request, payroll_id):
-        try:
-            check_account_type(self.request.user, account_type)
-            payroll_instance = get_object_or_404(Payroll, id=payroll_id)
-
-            serializer = PayrollDetailSerializer(payroll_instance)
-            return Response(serializer.data, status=HTTP_200_OK)
-
-        except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
-
-        except APIException as e:
-            return Response({"message": str(e.detail)}, status=e.status_code)
-
-        except Exception as e:
-            # For all other exceptions, return a generic error message.
-            return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+        # todo: Initiate bulk transaction and reupdate the staff payment status
+        return Response({"message": "Requery initiated"}, status=HTTP_200_OK)
 
 
 class AddStaffToPayroll(APIView):
-    def post(self, request, payroll_id):
+    @swagger_auto_schema(
+        operation_description="Add a staff to a payroll",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'staff_id': openapi.Schema(type=openapi.TYPE_INTEGER)
+            }
+        ),
+        responses={200: openapi.Response("Staff Added")}
+    )
+    def post(self, request: Any, payroll_id: int) -> Response:
         try:
             check_account_type(self.request.user, account_type)
             staff_id = request.data.get('staff_id')
@@ -407,7 +438,7 @@ class RemoveStaffFromPayroll(APIView):
 
         except Exception as e:
             return Response({"message": "An error occurred"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
 
 
 class ProcessPayrollAndTax (APIView):
@@ -415,7 +446,7 @@ class ProcessPayrollAndTax (APIView):
         try:
             check_account_type(self.request.user, account_type)
             payroll_instance = get_object_or_404(Payroll, id=payroll_id)
-            taxroll_instance = get_object_or_404(Taxroll, payroll= payroll_id) 
+            taxroll_instance = get_object_or_404(Taxroll, payroll= payroll_id)
 
             payroll_instance.status = Status[1][1]
             taxroll_instance.status = Status[1][1]
