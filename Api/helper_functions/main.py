@@ -12,6 +12,9 @@ from collections import defaultdict
 from django.db.models import Sum
 from enum import Enum
 from Paystack.models import Bank
+from django.contrib.auth.models import User
+from Main.models import School
+from typing import Any
 
 
 def check_account_type(user, account_type):
@@ -289,9 +292,15 @@ def calculate_cash_and_transfer_transaction_total(transactions):
     return cash_total, transfer_total
 
 
-def get_user_school(user):
+def get_user_school(user: User) -> School:
     '''
-        Get the user's school
+    Get the user's school
+
+    Args:
+        user (User): The user object
+
+    Returns:
+        School: The school object associated with the user
     '''
     return get_object_or_404(School, id=get_school_from_user(user.id))
 

@@ -55,9 +55,13 @@ class MonthlyTransactionSerializer(serializers.Serializer):
     total_amount = serializers.DecimalField(max_digits=10, decimal_places=2)
 
 
-class CashandTransactionTotalSerializer (serializers.Serializer):
+class CashandTransactionTotalSerializer(serializers.Serializer):
     cash_total = serializers.IntegerField()
     transfer_total = serializers.IntegerField()
+    total = serializers.SerializerMethodField()
+
+    def get_total(self, obj):
+        return obj['cash_total'] + obj['transfer_total']
 
 
 class OperationsAccountCashTransactionRecordSerializer(serializers.ModelSerializer):

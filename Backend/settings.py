@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'Api',
     'Paystack',
     'channels',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [

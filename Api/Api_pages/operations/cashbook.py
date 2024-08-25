@@ -1,25 +1,22 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.status import *
-from Api.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import status, viewsets
 from rest_framework.views import APIView
 # from Background_Tasks.tasks import
-from django.core.cache import cache
-from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
 from Main.models import Operations_account, Operations_account_transaction_record
 from Api.helper_functions.main import *
 from Api.Api_pages.operations.serializers import *
-from django.http import Http404
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import get_user_model
-account_type = "OPERATIONS"
+from typing import List, Dict, Any, Union
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+account_type: str = "OPERATIONS"
 
 
-# tested✅😊
-# todo: later also pass expense data to
+
 class GetMonthlyTransaction(APIView):
     '''
         Returns all the transactions that has happened for the last seven months. it sorts the transaction
@@ -27,18 +24,23 @@ class GetMonthlyTransaction(APIView):
     '''
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        user_school = get_user_school(request.user)
-        unarranged_transaction_list = get_unarranged_transaction_six_months_ago(
+    @swagger_auto_schema(
+        operation_description="Get monthly transactions for the last seven months",
+        responses={200: MonthlyTransactionSerializer(many=True),
+                   404: "No transactions have been made for the past six months."}
+    )
+    def get(self, request) -> Response:
+        user_school: Any = get_user_school(request.user)
+        unarranged_transaction_list: Union[List[Any], None] = get_unarranged_transaction_six_months_ago(
             user_school)
 
         if unarranged_transaction_list is None:
             return Response(status=HTTP_404_NOT_FOUND, data={"message": "No transactions have been made for the past six months."})
 
-        processed_data = process_and_sort_transactions_by_months(
+        processed_data: List[Dict[str, Any]] = process_and_sort_transactions_by_months(
             unarranged_transaction_list)
 
-        transaction_serializer = MonthlyTransactionSerializer(
+        transaction_serializer: MonthlyTransactionSerializer = MonthlyTransactionSerializer(
             processed_data, many=True)
 
         return Response(transaction_serializer.data, status=HTTP_200_OK)
@@ -49,12 +51,16 @@ class GetAmountAvailableOperationsAccount(APIView):
     '''Get all the amount available in the operations account'''
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        user_school = get_user_school(request.user)
-        operations_account = get_object_or_404(
+    @swagger_auto_schema(
+        operation_description="Get the amount available in the operations account",
+        responses={200: OperationsAccountSerializer()}
+    )
+    def get(self, request) -> Response:
+        user_school: Any = get_user_school(request.user)
+        operations_account: Operations_account = get_object_or_404(
             Operations_account, school=user_school)
 
-        serializer = OperationsAccountSerializer(operations_account)
+        serializer: OperationsAccountSerializer = OperationsAccountSerializer(operations_account)
 
         return Response(serializer.data, status=HTTP_200_OK)
 
@@ -63,17 +69,21 @@ class GetAmountAvailableOperationsAccount(APIView):
 class GetOperationsAndCenteralAccountTotal(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        user_school = get_user_school(request.user)
-        operations_account = get_object_or_404(Operations_account, school=user_school)
-        central_account = get_object_or_404(Capital_Account, school=user_school)
+    @swagger_auto_schema(
+        operation_description="Get the total of operations and central accounts",
+        responses={200: OperationsAndCapitalAccountSerializer()}
+    )
+    def get(self, request) -> Response:
+        user_school: Any = get_user_school(request.user)
+        operations_account: Operations_account = get_object_or_404(Operations_account, school=user_school)
+        central_account: Any = get_object_or_404(Capital_Account, school=user_school)
 
-        data = {
+        data: Dict[str, Any] = {
             'operations_account': operations_account,
             'central_account': central_account
         }
 
-        serializer = OperationsAndCapitalAccountSerializer(data)
+        serializer: OperationsAndCapitalAccountSerializer = OperationsAndCapitalAccountSerializer(data)
 
         return Response(serializer.data, status=HTTP_200_OK)
 
@@ -85,32 +95,34 @@ class GetTransactionSevenDaysAgo (APIView):
     '''
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request) -> Response:
         try:
             check_account_type(request.user, account_type)
-            user_school = get_user_school(request.user)
-            unarranged_transaction_list = get_unarranged_transaction_seven_days_ago(
+            user_school: Any = get_user_school(request.user)
+            unarranged_transaction_list: Union[List[Any], None] = get_unarranged_transaction_seven_days_ago(
                 user_school)
 
             if unarranged_transaction_list is None:
                 return Response(status=HTTP_404_NOT_FOUND, data={"message": "No transactions have been made for the past seven days."})
 
-            processed_data = process_and_sort_transactions_by_days(
+            processed_data: List[Dict[str, Any]] = process_and_sort_transactions_by_days(
                 unarranged_transaction_list)
+            cash_total: float
+            transfer_total: float
             cash_total, transfer_total = calculate_cash_and_transfer_transaction_total(
                 unarranged_transaction_list)
 
-            cash_and_transaction_data = {
+            cash_and_transaction_data: Dict[str, float] = {
                 "cash_total": cash_total,
                 "transfer_total": transfer_total
             }
 
-            transaction_serializer = SummaryTransactionSerializer(
+            transaction_serializer: SummaryTransactionSerializer = SummaryTransactionSerializer(
                 processed_data, many=True)
-            cash_and_transfer_total_serializer = CashandTransactionTotalSerializer(
+            cash_and_transfer_total_serializer: CashandTransactionTotalSerializer = CashandTransactionTotalSerializer(
                 cash_and_transaction_data)
 
-            data = {
+            data: Dict[str, Any] = {
                 "summary": cash_and_transfer_total_serializer.data,
                 "transfer_list": transaction_serializer.data
             }
@@ -130,22 +142,33 @@ class GetAllCashTransactions(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, pending):
+    @swagger_auto_schema(
+        operation_description="Get all cash transactions",
+        manual_parameters=[
+            openapi.Parameter('pending', openapi.IN_PATH, description="Filter for pending transactions", type=openapi.TYPE_STRING)
+        ],
+        responses={
+            200: OperationsAccountCashTransactionRecordSerializer(many=True),
+            403: "Permission denied",
+            500: "Internal server error"
+        }
+    )
+    def get(self, request, pending: str) -> Response:
         try:
             check_account_type(request.user, account_type)
-            user_school = get_user_school(request.user)
+            user_school: Any = get_user_school(request.user)
 
             if pending == "pending":
-                operations_account_cash_transaction = Operations_account_transaction_record.objects.filter(
+                operations_account_cash_transaction: Any = Operations_account_transaction_record.objects.filter(
                     school=user_school, transaction_type="CASH",
                     status__in=["PENDING_APPROVAL", "PENDING_DELETE", "PENDING_EDIT"]
                 ).order_by('-time')
             else:
-                operations_account_cash_transaction = Operations_account_transaction_record.get_transaction(
+                operations_account_cash_transaction: Any = Operations_account_transaction_record.get_transaction(
                     school=user_school, transaction_type="CASH"
                 ).order_by('-time').filter(status="SUCCESS")
 
-            serializer = OperationsAccountCashTransactionRecordSerializer(
+            serializer: OperationsAccountCashTransactionRecordSerializer = OperationsAccountCashTransactionRecordSerializer(
                 operations_account_cash_transaction, many=True
             )
             return Response(serializer.data, status=HTTP_200_OK)
@@ -180,12 +203,21 @@ class ViewAndModifyCashTransaction(viewsets.ModelViewSet):
             return CashTransactionWriteSerializer
         return super().get_serializer_class()  # Default behavior
 
-    def partial_update(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        operation_description="Partially update a cash transaction",
+        request_body=CashTransactionWriteSerializer,
+        responses={
+            200: "Successfully modified",
+            400: "Bad Request",
+            401: "Permission denied"
+        }
+    )
+    def partial_update(self, request, *args, **kwargs) -> Response:
         try:
             check_account_type(request.user, account_type)
-            instance = self.get_object()
-            merged_data = {**self.get_serializer(instance).data, **request.data}
-            serializer = self.get_serializer(instance, data=merged_data)
+            instance: Operations_account_transaction_record = self.get_object()
+            merged_data: Dict[str, Any] = {**self.get_serializer(instance).data, **request.data}
+            serializer: CashTransactionWriteSerializer = self.get_serializer(instance, data=merged_data)
             if serializer.is_valid():
                 if serializer.validated_data["status"] == "PENDING_DELETE" or serializer.validated_data["status"] == "PENDING_EDIT":
                     serializer.save()
@@ -201,18 +233,22 @@ class ViewAndModifyCashTransaction(viewsets.ModelViewSet):
 
 
 
-    def list(self, request, *args, **kwargs):
+    @swagger_auto_schema(auto_schema=None)
+    def list(self, request, *args, **kwargs) -> Response:
         return Response({"message": "This method is not supported"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def create(self, request, *args, **kwargs):
+    @swagger_auto_schema(auto_schema=None)
+    def create(self, request, *args, **kwargs) -> Response:
         return Response({"message": "This method is not supported"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def destroy(self, request, *args, **kwargs):
+    @swagger_auto_schema(auto_schema=None)
+    def destroy(self, request, *args, **kwargs) -> Response:
         return Response({"message": "This method is not supported"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def update(self, request, *args, **kwargs):
+    @swagger_auto_schema(auto_schema=None)
+    def update(self, request, *args, **kwargs) -> Response:
         return Response({"message": "This method is not supported"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    # tested✅😊
+
 
 
 # APi to to add or creat cash transaction instance
@@ -222,7 +258,16 @@ class CreateCashTransaction (APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, format=None):
+    @swagger_auto_schema(
+        operation_description="Create a cash transaction",
+        request_body=CashTransactionWriteSerializer,
+        responses={
+            201: "Transaction created successfully",
+            400: "Your form information is in-correct",
+            401: "Permission denied"
+        }
+    )
+    def post(self, request, format=None) -> Response:
         """
         Create a cash transaction.
 
@@ -237,7 +282,7 @@ class CreateCashTransaction (APIView):
         """
         try:
             check_account_type(request.user, account_type)
-            serializer = CashTransactionWriteSerializer(data=request.data)
+            serializer: CashTransactionWriteSerializer = CashTransactionWriteSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save(status="PENDING_APPROVAL", school=get_user_school(
                     request.user), transaction_type="CASH", transaction_category="DEBIT")
@@ -255,11 +300,15 @@ class GetCashLeftInSafeAndCurrentMonthCashSummary (APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        user_school = get_user_school(request.user)
-        data = get_cash_left_and_month_summary(user_school, transaction_type="CASH")
+    @swagger_auto_schema(
+        operation_description="Get cash left in safe and current month cash summary",
+        responses={200: CashTransactionDetailsSerializer()}
+    )
+    def get(self, request) -> Response:
+        user_school: School = get_user_school(request.user)
+        data: Dict[str, Any] = get_cash_left_and_month_summary(user_school, transaction_type="CASH")
 
-        serializer = CashTransactionDetailsSerializer(data)
+        serializer: CashTransactionDetailsSerializer = CashTransactionDetailsSerializer(data)
         return Response(serializer.data, status=HTTP_200_OK)
 
 
@@ -268,10 +317,17 @@ class GetCashLeftInSafeAndCurrentMonthCashSummary (APIView):
 class GetIncomeGraph (APIView):
     permission_classes = [IsAuthenticated]
 
-    def get (self, request):
+    @swagger_auto_schema(
+        operation_description="Get income graph data",
+        responses={
+            401: "Permission denied"
+        }
+    )
+    def get (self, request) -> Response:
         try:
             check_account_type(request.user, account_type)
-
+            # TODO: Implement the logic for getting income graph data
+            return Response({"message": "Not implemented"}, status=HTTP_501_NOT_IMPLEMENTED)
         except PermissionDenied:
             return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
 
@@ -282,17 +338,21 @@ class GetIncomeGraph (APIView):
 # API to get the summary of amount spent in the operatins account for a particular
 class GetParticularsSummary(APIView):
 
-    def get(self, request):
-        user_school = get_user_school(request.user)
-        operations_account_transaction_list = Operations_account_transaction_record.objects.filter(school=user_school, status="SUCCESS")
+    @swagger_auto_schema(
+        operation_description="Get summary of amount spent in the operations account for particulars",
+        responses={200: PercentageSummarySerializer(many=True)}
+    )
+    def get(self, request) -> Response:
+        user_school: Any = get_user_school(request.user)
+        operations_account_transaction_list: Any = Operations_account_transaction_record.objects.filter(school=user_school, status="SUCCESS")
 
-        summary_dict = get_transaction_summary_by_header(operations_account_transaction_list)
+        summary_dict: Dict[str, Any] = get_transaction_summary_by_header(operations_account_transaction_list)
 
         # Convert the summary dictionary to a list of dictionaries suitable for the serializer
-        summary_list = [
+        summary_list: List[Dict[str, Any]] = [
             {'particulars_name': key, **value}
             for key, value in summary_dict.items()
         ]
 
-        serializer = PercentageSummarySerializer(summary_list, many=True)
+        serializer: PercentageSummarySerializer = PercentageSummarySerializer(summary_list, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
