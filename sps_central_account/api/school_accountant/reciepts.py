@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import PermissionDenied
 
 from sps_operations_account.utils.main import get_user_school
-account_type = "SCHOOL_ACCOUNTANT"
+account_type = "ACCOUNTANT"
 
 
 class Get_all_reciepts (APIView):

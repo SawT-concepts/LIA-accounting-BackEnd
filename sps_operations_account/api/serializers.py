@@ -58,7 +58,7 @@ class  OperationsAccountTotalSerializer(serializers.ModelSerializer):
 class  CentralAccountTotalSerializer(serializers.ModelSerializer):
     class Meta:
         model = CapitalAccount
-        fields = ('amount_availabe',)
+        fields = ('amount_available',)
 
 
 class SummaryTransactionSerializer(serializers.Serializer):

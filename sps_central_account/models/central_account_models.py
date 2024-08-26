@@ -32,10 +32,10 @@ class CapitalAccount(models.Model):
     name = models.CharField(max_length=100, verbose_name="Bank Account Name")
     account_number = models.CharField(max_length=100, verbose_name="Account Number")
     school = models.OneToOneField("sps_core.school", on_delete=models.CASCADE)
-    amount_availabe = models.BigIntegerField()
+    amount_available = models.BigIntegerField()
 
     def transfer_to_operations_account(self, transfer_amount):
-        if transfer_amount > self.amount_availabe:
+        if transfer_amount > self.amount_available:
             raise ValueError("Transfer amount exceeds available capital funds.")
 
         try:
@@ -43,7 +43,7 @@ class CapitalAccount(models.Model):
         except ObjectDoesNotExist:
             raise ValueError("Operations account does not exist for this school.")
 
-        self.amount_availabe -= transfer_amount
+        self.amount_available -= transfer_amount
         operations_account.fund_operations_account(additional_amount_cash=transfer_amount)
         self.save()
         operations_account.save()

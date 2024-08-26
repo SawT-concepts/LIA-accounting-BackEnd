@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models.main_models import OperationsAccount, Payroll, Taxroll, OperationsAccountTransactionRecord, OperationsAccountTransactionModificationTracker, OperationsAccountTransactionRecordsEditedField, Particular
+from .models.main_models import OperationsAccount
+from .models.operations_payment_models import Payroll, Taxroll
+from .models.transaction_models import OperationsAccountTransactionRecord, OperationsAccountTransactionModificationTracker, OperationsAccountTransactionRecordsEditedField, Particular
 
 
 @admin.register(OperationsAccount)
