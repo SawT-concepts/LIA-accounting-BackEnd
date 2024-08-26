@@ -29,12 +29,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     # installed apps
-    'Authentication',
-    'Main',
-    'Api',
-    'Paystack',
+    'sps_authentication',
+    'sps_operations_account',
+    'sps_fees_payment_structure',
+    'sps_central_account',
+    'sps_notifications',
+    'sps_core',
+    'sps_generics',
+    'paystack',
     'channels',
     'drf_yasg',
+    'background_tasks',
 ]
 
 MIDDLEWARE = [
@@ -180,8 +185,8 @@ CORS_ALLOW_HEADERS = ['*']
 
 
 # Authentication settings
-AUTH_USER_MODEL = 'Authentication.CustomUser'
-AUTHENTICATION_BACKENDS = ['Authentication.auth_backend.EmailBackend']
+AUTH_USER_MODEL = 'sps_authentication.CustomUser'
+AUTHENTICATION_BACKENDS = ['sps_authentication.auth_backend.EmailBackend']
 
 
 REST_FRAMEWORK = {
@@ -235,7 +240,7 @@ SIMPLE_JWT = {
 }
 
 # will change later
-CELERY_APP = "Background_Tasks"
+CELERY_APP = "background_tasks"
 CELERY_BROKER_URL = "redis://default:NZpAOkwbhMeiihHhDICi@containers-us-west-90.railway.app:7278"
 CELERY_RESULT_BACKEND = "redis://default:NZpAOkwbhMeiihHhDICi@containers-us-west-90.railway.app:7278"
 

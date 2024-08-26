@@ -1,4 +1,4 @@
-?How do i use the payroll class 
+?How do i use the payroll class
 
 
 '''the model instance can be created like this'''
@@ -19,7 +19,7 @@ staff_data_list = [
         "account_name": "NAME",
         "payment_status": "PENDING",
     },
-    
+
     # Add more staff data dictionaries here...
 ]
 
@@ -74,8 +74,8 @@ payroll.save()
 
 # from django.dispatch import Signal
 
-# transaction_status = [('pending', 'Pending'), 
-#                       ('approved', 'Approved'), 
+# transaction_status = [('pending', 'Pending'),
+#                       ('approved', 'Approved'),
 #                       ('declined', 'Declined')]
 
 # class Transaction_status(models.Model):
@@ -84,7 +84,7 @@ payroll.save()
 #     def __str__(self):
 #         return str(self.message)
 
-Transaction = Operations_account_transaction_record
+Transaction = OperationsAccountTransactionRecord
 
 @receiver(post_save, sender=Transaction)
 def transaction_pending_handler(sender, instance, **kwargs):
@@ -128,7 +128,7 @@ def transaction_declined_handler(sender, instance, **kwargs):
 
 - create Notifcation model
 - function to invoke notification model
-- notification is being created websocket to send notification 
+- notification is being created websocket to send notification
 -
 
 
@@ -136,16 +136,16 @@ def transaction_declined_handler(sender, instance, **kwargs):
 class Structure (enum):
     APPROVED = Approved
     REQUEST = Request
-    COMPLETED 
+    COMPLETED
 
 
 
 
 message = f'your  request for initializing salary payement has been approved by management'
 There has a request from operations to initializing salary payement worth N2,000,000
-There has a request from operations to initializing transfer transaction worth N200,000 
-Salary payment has been completed with zero issues 
-Transaction has been processed successfully to 
+There has a request from operations to initializing transfer transaction worth N200,000
+Salary payment has been completed with zero issues
+Transaction has been processed successfully to
 
 
 
