@@ -154,13 +154,8 @@ class Student(models.Model):
     is_active: bool = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs) -> None:
-        # Define a pattern to link the student's name, school, and registration_number
         pattern: str = f"{self.first_name}{self.last_name}{self.school.name}{self.registration_number}"
-
-        # Generate a hash of the pattern using SHA-256
         hashed_pattern: str = hashlib.sha256(pattern.encode()).hexdigest()
-
-        # Set the student_id field with the hashed pattern
         self.student_id = hashed_pattern
         super().save(*args, **kwargs)
 
@@ -187,13 +182,13 @@ class Student(models.Model):
         fee_category = models.get_model('sps_fees_payment_structure', 'FeesCategory').objects.get(
             grade=student_class, category_type=category_types[0][0])
         school_fees = models.get_model('sps_fees_payment_structure', 'SchoolFeesCategory').objects.filter(
-            category=fee_category, term=term, is_compoulslry=True)
+            category=fee_category, term=term, is_compulsory=True)
 
         for fee in school_fees:
             amount += fee.amount
 
         other_fees = models.get_model('sps_fees_payment_structure', 'OtherFeeCategory').objects.filter(
-            category=fee_category, term=term, is_compoulslry=True)
+            category=fee_category, term=term, is_compulsory=True)
 
         for fee in other_fees:
             amount += fee.amount

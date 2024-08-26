@@ -25,7 +25,7 @@ Django models for handling various fee categories in a school management system.
    - term: CharField with choices from school_terms.
    - minimum_percentage: BigIntegerField for the minimum percentage.
    - amount: BigIntegerField for the amount.
-   - is_compoulslry: BooleanField indicating whether the fee is compulsory.
+   - is_compulsory: BooleanField indicating whether the fee is compulsory.
 
 3. BusFeeCategory:
    Represents a fee category specifically for bus fees associated with a school, grade, and term.
@@ -81,7 +81,7 @@ class SchoolFeesCategory (models.Model):
     '''financials'''
     minimum_percentage = models.BigIntegerField(default=0)
     amount = models.BigIntegerField(default=0)
-    is_compoulslry = models.BooleanField(default=False)
+    is_compulsory = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.name} school fee category for {self.category} in {self.category.grade} for {self.term}'
@@ -111,7 +111,7 @@ class UniformAndBooksFeeCategory (models.Model):
     '''financials'''
     minimum_percentage = models.BigIntegerField(default=0)
     amount = models.BigIntegerField(default=0)
-    is_compoulslry = models.BooleanField(default=False)
+    is_compulsory = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.name} uniform fee category for {self.category.school}'
@@ -122,7 +122,7 @@ class OtherFeeCategory (models.Model):
     image = models.ImageField()
     term = models.CharField(max_length=50, choices=school_terms)
     category = models.ForeignKey("sps_fees_payment_structure.FeesCategory", on_delete=models.CASCADE)
-    is_compoulslry = models.BooleanField(default=False)
+    is_compulsory = models.BooleanField(default=False)
     description = models.TextField(blank=True)
 
     '''financials'''
