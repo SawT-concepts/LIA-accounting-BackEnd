@@ -3,18 +3,21 @@ from celery import Celery
 from pathlib import Path
 from datetime import timedelta
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f0dii8x23l6ci++_9(7_$memri5ks_cup+0hv&mkpx%7egoqpq'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 
 # Application definition
@@ -80,7 +83,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [("redis://default:XPkJdlhNWgmUOUIbUgzDeMSYemmiMuZi@roundhouse.proxy.rlwy.net:11530")],
+            "hosts": [os.getenv('REDIS_URL')],
         },
     },
 }
@@ -113,8 +116,8 @@ CHANNEL_LAYERS = {
 # SQLite configuration
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE'),
+        'NAME': os.path.join(BASE_DIR, os.getenv('DB_NAME')),
     }
 }
 
@@ -241,14 +244,14 @@ SIMPLE_JWT = {
 
 # will change later
 CELERY_APP = "background_tasks"
-CELERY_BROKER_URL = "redis://default:NZpAOkwbhMeiihHhDICi@containers-us-west-90.railway.app:7278"
-CELERY_RESULT_BACKEND = "redis://default:NZpAOkwbhMeiihHhDICi@containers-us-west-90.railway.app:7278"
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 
 
 # settings.py
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 1025
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT'))
 
 
 # celery for background task configuration
@@ -261,5 +264,5 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 
-PAYSTACK_SECRET_KEY = "sk_test_bfc102895076cd29d09ac8d6f4043f1c8e73481b"
-PAYSTACK_PUBLIC_KEY = "pk_test_b50c758a1c445e60e9782ecd6040dab28e142bb8"
+PAYSTACK_SECRET_KEY = os.getenv('PAYSTACK_SECRET_KEY')
+PAYSTACK_PUBLIC_KEY = os.getenv('PAYSTACK_PUBLIC_KEY')

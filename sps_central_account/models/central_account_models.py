@@ -32,7 +32,7 @@ class CapitalAccount(models.Model):
     name = models.CharField(max_length=100, verbose_name="Bank Account Name")
     account_number = models.CharField(max_length=100, verbose_name="Account Number")
     school = models.OneToOneField("sps_core.school", on_delete=models.CASCADE)
-    amount_available = models.BigIntegerField()
+    amount_available = models.BigIntegerField(default=0)
 
     def transfer_to_operations_account(self, transfer_amount):
         if transfer_amount > self.amount_available:

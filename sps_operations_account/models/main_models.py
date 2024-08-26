@@ -8,8 +8,8 @@ class OperationsAccount(models.Model):
     name = models.CharField(max_length=100, verbose_name="Bank Account Name")
     account_number = models.CharField(max_length=100, verbose_name="Account Number")
     school = models.OneToOneField("sps_core.school", on_delete=models.CASCADE)
-    amount_available_cash = models.BigIntegerField()
-    amount_available_transfer = models.BigIntegerField()
+    amount_available_cash = models.BigIntegerField(default=0)
+    amount_available_transfer = models.BigIntegerField(default=0)
 
     def get_total_amount_available(self):
         return self.amount_available_cash + self.amount_available_transfer
