@@ -44,3 +44,7 @@ Thumbs.db
 
 # Ignore database file
 db.sqlite3
+
+# Ignore Django migrations
+**/migrations/**
+
