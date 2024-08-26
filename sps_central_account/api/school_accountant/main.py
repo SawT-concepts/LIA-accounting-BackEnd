@@ -104,7 +104,7 @@ class GetPercentageSummary(APIView):
             return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
 
 
-class GetPaymentSmmaryByGrade(APIView):
+class GetPaymentSummaryByGrade(APIView):
     '''This api returns the payment summary statistics of students in the specified class'''
     permission_classes = [IsAuthenticated]
 

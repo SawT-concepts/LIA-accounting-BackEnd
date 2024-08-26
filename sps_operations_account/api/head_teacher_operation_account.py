@@ -6,7 +6,7 @@ from sps_operations_account.api.serializers import CashTransactionReadSerializer
 from rest_framework.views import APIView
 # from Background_Tasks.tasks import
 from django.shortcuts import get_object_or_404
-from sps_operations_account.models.operations_payment_models import OperationsAccountTransactionRecord, OperationsAccountTransactionModificationTracker
+from sps_operations_account.models import OperationsAccountTransactionRecord, OperationsAccountTransactionModificationTracker
 from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import PermissionDenied
 from django.db import models

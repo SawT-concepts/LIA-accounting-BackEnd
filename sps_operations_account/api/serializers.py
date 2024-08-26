@@ -206,7 +206,7 @@ class PayrollReadSerializer (serializers.ModelSerializer):
     class Meta:
         model = Payroll
         fields = ('status', 'name', 'date_initiated',
-                  'total_amount_for_salary', 'total_amount_tax')
+                  'total_amount_for_salary', 'total_amount_for_tax')
 
 
 class TransferTransactionWriteSerializer (serializers.ModelSerializer):
