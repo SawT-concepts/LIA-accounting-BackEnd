@@ -41,7 +41,7 @@ urlpatterns = [
          name='verify_account_number'),
 
 
-#     # Operation Accountnt cashbook
+#     # Operation Accountant cashbook
     path(f'{OPERATIONS_ACCOUNTANT}/get_amount_available_operations_account',
          GetAmountAvailableOperationsAccount.as_view(), name='get_amount available'),
     path(f'{OPERATIONS_ACCOUNTANT}/get_operations_and_central_operations_account',
@@ -50,8 +50,10 @@ urlpatterns = [
          GetMonthlyTransaction.as_view(), name="get_monthly_transaction"),  # ✅
     path(f'{OPERATIONS_ACCOUNTANT}/get_cash_and_transfer_record_seven_days_ago', GetTransactionSevenDaysAgo.as_view(
     ), name='get_cash_and transfer_record_seven_days_ago'),  # ✅
-    path(f'{OPERATIONS_ACCOUNTANT}/get_all_cash_transactions/<str:pending>/',
-         GetAllCashTransactions.as_view(), name='all_cash_transactions_with_status'),
+    path(f'{OPERATIONS_ACCOUNTANT}/get_all_approved_cash_transactions',
+         GetAllApprovedCashTransactions.as_view(), name='all_cash_transactions_with_status'),
+    path(f'{OPERATIONS_ACCOUNTANT}/get_all_pending_cash_transactions',
+         GetAllPendingCashTransactions.as_view(), name='all_pending_cash_transactions'),
     path(f'{OPERATIONS_ACCOUNTANT}/create_cash_transaction', CreateCashTransaction.as_view(),
          name='create_cash_transaction'),  # ✅
     path(f'{OPERATIONS_ACCOUNTANT}/view_cash_transaction_summary', GetCashLeftInSafeAndCurrentMonthCashSummary.as_view(

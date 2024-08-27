@@ -9,7 +9,7 @@ class OperationsAccountAdmin(admin.ModelAdmin):
     list_display = ('name', 'account_number', 'school', 'amount_available_cash', 'amount_available_transfer', 'get_total_amount_available')
     list_filter = ('school',)
     search_fields = ('name', 'account_number', 'school__name')
-    readonly_fields = ('get_total_amount_available',)
+
 
     def get_total_amount_available(self, obj):
         return obj.get_total_amount_available()

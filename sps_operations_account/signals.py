@@ -14,7 +14,7 @@ def track_previous_amount(sender, instance, **kwargs):
     """
     if instance.pk:
         try:
-            old_instance = OperationsAccountTransactionRecord.objects.get(pk=instance.pk,)
+            old_instance = OperationsAccountTransactionRecord.objects.get(pk=instance.pk)
             OperationsAccountTransactionModificationTracker.objects.filter(transaction=instance, status="PENDING").update(status="CANCELLED")
             tracker = OperationsAccountTransactionModificationTracker.objects.create(
                 transaction=instance,
@@ -28,7 +28,8 @@ def track_previous_amount(sender, instance, **kwargs):
                 old_value = getattr(old_instance, field)
                 new_value = getattr(instance, field)
                 if old_value != new_value:
-                    tracker.OperationsAccountTransactionRecordsEditedField_set.create(
+                    OperationsAccountTransactionRecordsEditedField.objects.create(
+                        tracker=tracker,
                         previous_state_attribute=field,
                         previous_state_value=str(old_value),
                         new_state_attribute=field,
@@ -56,7 +57,6 @@ def update_operations_account_on_transaction(sender, instance, created, **kwargs
         created (bool): A boolean indicating whether the instance was created.
         **kwargs: Additional keyword arguments.
     """
-    print("Alfred hichok")
     print(instance.status)
     notification_recipients = CustomUser.objects.filter(school=instance.school)
 

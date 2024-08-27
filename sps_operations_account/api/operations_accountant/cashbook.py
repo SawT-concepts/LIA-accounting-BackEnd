@@ -140,51 +140,103 @@ class GetTransactionSevenDaysAgo (APIView):
 
 
 
-class GetAllCashTransactions(APIView):
+class GetAllApprovedCashTransactions(APIView):
     """
     API endpoint to get all approved cash transactions.
     """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, pending: str) -> Response:
+    def get(self, request) -> Response:
         try:
             check_account_type(request.user, account_type)
             user_school: Any = get_user_school(request.user)
 
-            if pending == "pending":
-               operations_account_cash_transaction: Any = OperationsAccountTransactionRecord.objects.filter(
-                    school=user_school, transaction_type="CASH",
-                    status__in=["PENDING_APPROVAL", "PENDING_DELETE", "PENDING_EDIT"]
-                ).order_by('-time')
-            else:
-               operations_account_cash_transaction: Any = OperationsAccountTransactionRecord.get_transaction(
-                    school=user_school, transaction_type="CASH"
-                ).order_by('-time').filter(status="SUCCESS")
+            if user_school is None:
+                return Response({"message": "User school not found"}, status=HTTP_404_NOT_FOUND)
 
-            page = request.query_params.get('page', 1)
-            page_size = request.query_params.get('page_size', 20)
-            paginator = PageNumberPagination()
-            paginator.page_size = page_size
+            operations_account_cash_transaction: List[OperationsAccountTransactionRecord] = OperationsAccountTransactionRecord.get_transaction(
+                school=user_school.id, transaction_type="CASH"
+            ).order_by('-time').filter(status="SUCCESS")
 
-            try:
-                paginated_transactions = paginator.paginate_queryset(operations_account_cash_transaction, request)
-                serializer: OperationsAccountCashTransactionRecordSerializer = OperationsAccountCashTransactionRecordSerializer(
-                    paginated_transactions, many=True
-                )
-                return paginator.get_paginated_response(serializer.data)
-            except InvalidPage:
-                paginator.page = 1
-                paginated_transactions = paginator.paginate_queryset(operations_account_cash_transaction, request)
-                serializer: OperationsAccountCashTransactionRecordSerializer = OperationsAccountCashTransactionRecordSerializer(
-                    paginated_transactions, many=True
-                )
-                return paginator.get_paginated_response(serializer.data)
+            return self.paginate_and_serialize(request, operations_account_cash_transaction)
 
         except PermissionDenied:
             return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
         except Exception as e:
-            print(e)
             return Response({"message": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def paginate_and_serialize(self, request, transactions):
+        page = request.query_params.get('page', 1)
+        page_size = request.query_params.get('page_size', 20)
+        paginator = PageNumberPagination()
+        paginator.page_size = page_size
+
+        try:
+            paginated_transactions = paginator.paginate_queryset(transactions, request)
+            serializer: OperationsAccountCashTransactionRecordSerializer = OperationsAccountCashTransactionRecordSerializer(
+                paginated_transactions, many=True
+            )
+            return paginator.get_paginated_response(serializer.data)
+        except InvalidPage:
+            paginator.page = 1
+            paginated_transactions = paginator.paginate_queryset(transactions, request)
+            serializer: OperationsAccountCashTransactionRecordSerializer = OperationsAccountCashTransactionRecordSerializer(
+                paginated_transactions, many=True
+            )
+            return paginator.get_paginated_response(serializer.data)
+
+
+class GetAllPendingCashTransactions(APIView):
+    """
+    API endpoint to get all pending cash transactions.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request) -> Response:
+        try:
+            check_account_type(request.user, account_type)
+            user_school: Any = get_user_school(request.user)
+
+            if user_school is None:
+                return Response({"message": "User school not found"}, status=HTTP_404_NOT_FOUND)
+
+            operations_account_cash_transaction: List[OperationsAccountTransactionRecord] = OperationsAccountTransactionRecord.objects.filter(
+                school=user_school.id, transaction_type="CASH",
+                status__in=["PENDING_APPROVAL", "PENDING_DELETE", "PENDING_EDIT"]
+            ).order_by('-time')
+
+            return self.paginate_and_serialize(request, operations_account_cash_transaction)
+
+        except PermissionDenied:
+            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({"message": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def paginate_and_serialize(self, request, transactions):
+        page = request.query_params.get('page', 1)
+        page_size = request.query_params.get('page_size', 20)
+        paginator = PageNumberPagination()
+        paginator.page_size = page_size
+
+        try:
+            paginated_transactions = paginator.paginate_queryset(transactions, request)
+            serializer: OperationsAccountCashTransactionRecordSerializer = OperationsAccountCashTransactionRecordSerializer(
+                paginated_transactions, many=True
+            )
+            return paginator.get_paginated_response(serializer.data)
+        except InvalidPage:
+            paginator.page = 1
+            paginated_transactions = paginator.paginate_queryset(transactions, request)
+            serializer: OperationsAccountCashTransactionRecordSerializer = OperationsAccountCashTransactionRecordSerializer(
+                paginated_transactions, many=True
+            )
+            return paginator.get_paginated_response(serializer.data)
+    """
+    API endpoint to get all approved cash transactions.
+    """
+    permission_classes = [IsAuthenticated]
+
+
 
 class ViewAndModifyCashTransaction(viewsets.ModelViewSet):
     """

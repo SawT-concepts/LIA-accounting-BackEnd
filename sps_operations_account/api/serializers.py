@@ -92,6 +92,8 @@ class OperationsAccountCashTransactionRecordSerializer(serializers.ModelSerializ
 
 
     def get_transaction_modification(self, obj):
+        if obj.status == "SUCCESS":
+            return None
         modifications = OperationsAccountTransactionModificationTracker.objects.filter(
             transaction=obj,
             status='PENDING'

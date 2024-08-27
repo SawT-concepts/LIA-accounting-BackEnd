@@ -2,7 +2,7 @@
 
 HEAD_TEACHER = "head_teacher"
 ACCOUNTANT = "accountant"
-OPERATIONS_ACCOUNTANT = "operations_accountant"
+OPERATIONS_ACCOUNTANT = "operations"
 DIRECTOR = "director"
 PAYMENTS = "payments"
 GENERIC = "generic"
