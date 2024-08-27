@@ -14,7 +14,6 @@ def track_previous_amount(sender, instance, **kwargs):
     """
     if instance.pk:
         try:
-            # Fetch the old instance of the transaction record
             old_instance = OperationsAccountTransactionRecord.objects.get(pk=instance.pk)
 
             # Get the pending tracker and its edited fields
@@ -100,6 +99,8 @@ def update_operations_account_on_transaction(sender, instance, created, **kwargs
 
     if instance.status == "PENDING_APPROVAL" or instance.status == "PENDING_EDIT" or instance.status == "PENDING_DELETE":
         notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[3][0])
+
+        
 
     if instance.status == "CANCELLED" or instance.status == "SUCCESS":
         notification_recipients = notification_recipients.filter(account_type=CustomUser.ACCOUNT_TYPE_CHOICES[0][0])
