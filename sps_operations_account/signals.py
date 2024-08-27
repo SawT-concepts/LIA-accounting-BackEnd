@@ -6,17 +6,33 @@ from sps_notifications.models import Notification, NotificationManager
 from sps_operations_account.models import OperationsAccountTransactionModificationTracker, OperationsAccountTransactionRecord, OperationsAccountTransactionRecordsEditedField
 
 
+
 @receiver(pre_save, sender=OperationsAccountTransactionRecord)
 def track_previous_amount(sender, instance, **kwargs):
     """
     Track the previous amount and changes before saving the transaction.
-    ☑️this works fine.. ive tested it
     """
     if instance.pk:
         try:
+            # Fetch the old instance of the transaction record
             old_instance = OperationsAccountTransactionRecord.objects.get(pk=instance.pk)
-            OperationsAccountTransactionModificationTracker.objects.filter(transaction=instance, status="PENDING").update(status="CANCELLED")
-            tracker = OperationsAccountTransactionModificationTracker.objects.create(
+
+            # Get the pending tracker and its edited fields
+            pending_tracker = OperationsAccountTransactionModificationTracker.objects.filter(
+                transaction=instance, status="PENDING"
+            ).first()
+
+            pending_edited_fields = OperationsAccountTransactionRecordsEditedField.objects.filter(
+                tracker=pending_tracker
+            ) if pending_tracker else OperationsAccountTransactionRecordsEditedField.objects.none()
+
+            # Update status of pending trackers to CANCELLED
+            OperationsAccountTransactionModificationTracker.objects.filter(
+                transaction=instance, status="PENDING"
+            ).update(status="CANCELLED")
+
+            # Create a new tracker for this save operation
+            new_tracker = OperationsAccountTransactionModificationTracker.objects.create(
                 transaction=instance,
                 status="PENDING",
                 head_teacher_comment=""
@@ -27,19 +43,41 @@ def track_previous_amount(sender, instance, **kwargs):
             for field in fields_to_track:
                 old_value = getattr(old_instance, field)
                 new_value = getattr(instance, field)
-                if old_value != new_value:
-                    OperationsAccountTransactionRecordsEditedField.objects.create(
-                        tracker=tracker,
-                        previous_state_attribute=field,
-                        previous_state_value=str(old_value),
-                        new_state_attribute=field,
-                        new_state_value=str(new_value)
-                    )
+
+                # Normalize values to ensure accurate comparison
+                if str(old_value) != str(new_value):
+                    # Check if this field was edited in the previous pending tracker
+                    previous_edit = pending_edited_fields.filter(new_state_attribute=field).first()
+
+                    if previous_edit and previous_edit.new_state_value == str(new_value):
+                        # If the new edit matches the previous one, move it to the new tracker
+                        previous_edit.tracker = new_tracker
+                        previous_edit.save()
+                    else:
+                        # Create a new edited field record
+                        OperationsAccountTransactionRecordsEditedField.objects.create(
+                            tracker=new_tracker,
+                            previous_state_attribute=field,
+                            previous_state_value=str(old_value),
+                            new_state_attribute=field,
+                            new_state_value=str(new_value)
+                        )
+
+                        # Delete the old edit if it exists
+                        if previous_edit:
+                            previous_edit.delete()
+                else:
+                    # Carry over previous edits if no new changes were made to this field
+                    if pending_tracker:
+                        previous_edit = pending_edited_fields.filter(new_state_attribute=field).first()
+                        if previous_edit:
+                            # Move the previous edit to the new tracker
+                            previous_edit.tracker = new_tracker
+                            previous_edit.save()
 
         except OperationsAccountTransactionRecord.DoesNotExist:
+            # Consider logging or handling this scenario for debugging purposes
             pass
-
-
 
 @receiver(post_save, sender=OperationsAccountTransactionRecord)
 def update_operations_account_on_transaction(sender, instance, created, **kwargs):

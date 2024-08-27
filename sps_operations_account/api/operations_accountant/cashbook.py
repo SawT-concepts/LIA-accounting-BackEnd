@@ -203,7 +203,7 @@ class GetAllPendingCashTransactions(APIView):
             operations_account_cash_transaction: List[OperationsAccountTransactionRecord] = OperationsAccountTransactionRecord.objects.filter(
                 school=user_school.id, transaction_type="CASH",
                 status__in=["PENDING_APPROVAL", "PENDING_DELETE", "PENDING_EDIT"]
-            ).order_by('-time')
+            ).order_by('time')
 
             return self.paginate_and_serialize(request, operations_account_cash_transaction)
 
@@ -287,6 +287,7 @@ class ViewAndModifyCashTransaction(viewsets.ModelViewSet):
                 # initiate a notification here later to head teacher
                 #! reduce amount from operations account
                 return Response({"message": "Successfully modified"}, status=status.HTTP_200_OK)
+            print("edit errors", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except PermissionDenied:
             return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)

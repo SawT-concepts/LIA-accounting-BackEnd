@@ -81,8 +81,13 @@ class CashandTransactionTotalSerializer(serializers.Serializer):
 
 
 class OperationsAccountCashTransactionRecordSerializer(serializers.ModelSerializer):
-    particulars = serializers.CharField(
-        source='particulars.name', read_only=True)
+    particulars = serializers.SerializerMethodField()
+
+    def get_particulars(self, obj):
+        return {
+            'name': obj.particulars.name,
+            'id': obj.particulars.id
+        }
     transaction_modification = serializers.SerializerMethodField()
 
     class Meta:
