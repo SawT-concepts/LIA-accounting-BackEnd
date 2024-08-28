@@ -203,7 +203,7 @@ class GetAllPendingCashTransactions(APIView):
             operations_account_cash_transaction: List[OperationsAccountTransactionRecord] = OperationsAccountTransactionRecord.objects.filter(
                 school=user_school.id, transaction_type="CASH",
                 status__in=["PENDING_APPROVAL", "PENDING_DELETE", "PENDING_EDIT"]
-            ).order_by('time')
+            ).order_by('-time')
 
             return self.paginate_and_serialize(request, operations_account_cash_transaction)
 

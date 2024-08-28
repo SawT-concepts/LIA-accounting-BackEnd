@@ -2,7 +2,9 @@ from typing import Any, Dict, List
 from rest_framework.response import Response
 from rest_framework.status import *
 from sps_authentication.utils.main import check_account_type
-from sps_operations_account.api.serializers import CashTransactionReadSerializer, TransactionModificationReadSerializer
+from sps_operations_account.api.serializers import  OperationsAccountCashTransactionRecordSerializer, TransactionModificationReadSerializer
+from rest_framework.pagination import PageNumberPagination
+from django.core.paginator import InvalidPage
 from rest_framework.views import APIView
 # from Background_Tasks.tasks import
 from django.shortcuts import get_object_or_404
@@ -46,33 +48,60 @@ class HeadTeacherGetAllPendingTransactionModification(APIView):
 
 
 class HeadTeacherGetAllPendingTransaction(APIView):
+    """
+    API endpoint to get all pending cash transactions for the head teacher's school.
+    """
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_description="Get all pending transactions for the head teacher's school",
+        operation_description="Get all pending cash transactions for the head teacher's school",
         responses={
-            200: CashTransactionReadSerializer(many=True),
+            200: OperationsAccountCashTransactionRecordSerializer(many=True),
             401: 'Unauthorized',
+            403: 'Forbidden',
             404: 'Not Found',
             500: 'Internal Server Error'
         }
     )
-    def get(self, request: Any) -> Response:
+    def get(self, request) -> Response:
         try:
             check_account_type(request.user, account_type)
-            user_school = get_user_school(request.user)
+            user_school: Any = get_user_school(request.user)
+
+            if user_school is None:
+                return Response({"message": "User school not found"}, status=HTTP_404_NOT_FOUND)
+
             pending_transaction_list: List[OperationsAccountTransactionRecord] = OperationsAccountTransactionRecord.objects.filter(
-                school=user_school, status__in=["PENDING_APPROVAL", "PENDING_EDIT", "PENDING_DELETE"], transaction_type="CASH")
+                school=user_school.id, transaction_type="CASH",
+                status__in=["PENDING_APPROVAL", "PENDING_DELETE", "PENDING_EDIT"]
+            ).order_by('-time')
 
-            if not pending_transaction_list:
-                return Response(status=HTTP_404_NOT_FOUND, data={"message": "No pending transaction."})
-
-            serializer = CashTransactionReadSerializer(
-                pending_transaction_list, many=True)
-            return Response(serializer.data, status=HTTP_200_OK)
+            return self.paginate_and_serialize(request, pending_transaction_list)
 
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({"message": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def paginate_and_serialize(self, request, transactions):
+        page = request.query_params.get('page', 1)
+        page_size = request.query_params.get('page_size', 20)
+        paginator = PageNumberPagination()
+        paginator.page_size = page_size
+
+        try:
+            paginated_transactions = paginator.paginate_queryset(transactions, request)
+            serializer: OperationsAccountCashTransactionRecordSerializer = OperationsAccountCashTransactionRecordSerializer(
+                paginated_transactions, many=True
+            )
+            return paginator.get_paginated_response(serializer.data)
+        except InvalidPage:
+            paginator.page = 1
+            paginated_transactions = paginator.paginate_queryset(transactions, request)
+            serializer: OperationsAccountCashTransactionRecordSerializer = OperationsAccountCashTransactionRecordSerializer(
+                paginated_transactions, many=True
+            )
+            return paginator.get_paginated_response(serializer.data)
 
 
 
