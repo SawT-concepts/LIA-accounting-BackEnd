@@ -41,6 +41,7 @@ urlpatterns = [
          name='verify_account_number'),
 
 
+
 #     # Operation Accountant cashbook
     path(f'{OPERATIONS_ACCOUNTANT}/get_amount_available_operations_account',
          GetAmountAvailableOperationsAccount.as_view(), name='get_amount available'),
@@ -67,6 +68,7 @@ urlpatterns = [
          GetPayrollDetails.as_view(), name='get_payroll'),
     path(f'{OPERATIONS_ACCOUNTANT}/process_payroll/<str:payroll_id>',
          ProcessPayrollAndTax.as_view(), name='process_payroll'),
+    path(f'{OPERATIONS_ACCOUNTANT}/particulars', ViewAndAddParticulars.as_view(), name="view_and_add_particulars"),
 
 
 

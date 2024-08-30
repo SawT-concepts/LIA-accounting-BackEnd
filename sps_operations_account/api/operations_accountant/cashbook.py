@@ -16,7 +16,6 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.pagination import PageNumberPagination
 from django.core.paginator import InvalidPage
-
 from sps_operations_account.utils.main import calculate_cash_and_transfer_transaction_total, get_cash_left_and_month_summary, get_transaction_summary_by_header, get_unarranged_transaction_seven_days_ago, get_unarranged_transaction_six_months_ago, get_user_school, process_and_sort_transactions_by_days, process_and_sort_transactions_by_months
 
 account_type: str = "OPERATIONS"
@@ -103,7 +102,7 @@ class GetTransactionSevenDaysAgo (APIView):
 
     def get(self, request) -> Response:
         try:
-            check_account_type(request.user, account_type)
+            # check_account_type(request.user, account_type)
             user_school: Any = get_user_school(request.user)
             unarranged_transaction_list: Union[List[Any], None] = get_unarranged_transaction_seven_days_ago(
                 user_school)
@@ -148,7 +147,7 @@ class GetAllApprovedCashTransactions(APIView):
 
     def get(self, request) -> Response:
         try:
-            check_account_type(request.user, account_type)
+            # check_account_type(request.user, account_type)
             user_school: Any = get_user_school(request.user)
 
             if user_school is None:
@@ -194,7 +193,7 @@ class GetAllPendingCashTransactions(APIView):
 
     def get(self, request) -> Response:
         try:
-            check_account_type(request.user, account_type)
+            # check_account_type(request.user, account_type)
             user_school: Any = get_user_school(request.user)
 
             if user_school is None:
@@ -404,7 +403,7 @@ class GetParticularSummary(APIView):
         responses={200: PercentageSummarySerializer(many=True)}
     )
     def get(self, request) -> Response:
-        user_school: Any = get_user_school(request.user)
+        user_school: School = get_user_school(request.user)
         operations_account_transaction_list: Any = OperationsAccountTransactionRecord.objects.filter(school=user_school, status="SUCCESS")
 
         summary_dict: Dict[str, Any] = get_transaction_summary_by_header(operations_account_transaction_list)
@@ -417,3 +416,44 @@ class GetParticularSummary(APIView):
 
         serializer: PercentageSummarySerializer = PercentageSummarySerializer(summary_list, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
+
+
+
+class ViewAndAddParticulars(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Get list of particulars for the user's school",
+        responses={
+            200: ParticularSerializer(many=True),
+            401: "Permission denied"
+        }
+    )
+    def get(self, request):
+        try:
+            user_school = get_user_school(request.user)
+            particulars = Particular.objects.filter(school=user_school)
+            serializer = ParticularSerializer(particulars, many=True)
+            return Response(serializer.data, status=HTTP_200_OK)
+        except PermissionDenied:
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+
+    @swagger_auto_schema(
+        operation_description="Add a new particular for the user's school",
+        request_body=ParticularSerializer,
+        responses={
+            201: ParticularSerializer,
+            400: "Bad Request",
+            401: "Permission denied"
+        }
+    )
+    def post(self, request):
+        try:
+            user_school = get_user_school(request.user)
+            serializer = ParticularSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(school=user_school)
+                return Response(serializer.data, status=HTTP_201_CREATED)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        except PermissionDenied:
+            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)

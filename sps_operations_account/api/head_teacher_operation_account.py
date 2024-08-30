@@ -65,7 +65,7 @@ class HeadTeacherGetAllPendingTransaction(APIView):
     )
     def get(self, request) -> Response:
         try:
-            check_account_type(request.user, account_type)
+            # check_account_type(request.user, account_type)
             user_school: Any = get_user_school(request.user)
 
             if user_school is None:
