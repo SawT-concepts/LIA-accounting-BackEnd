@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
-
+import dj_database_url
 
 load_dotenv()
 
@@ -92,6 +92,8 @@ CHANNEL_LAYERS = {
     },
 }
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 if os.getenv('PREVIEW_MODE') == 'True' or DEBUG:
     DATABASES = {
         'default': {
@@ -100,16 +102,8 @@ if os.getenv('PREVIEW_MODE') == 'True' or DEBUG:
         }
     }
 else:
-    #change this later
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': os.getenv('DB_NAME'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT'),
-        }
+        "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=1800),
     }
 
 # caches
@@ -159,7 +153,7 @@ USE_TZ = True
 # this path
 # i also installed pillow (pip install pillow) for images
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static-files')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
