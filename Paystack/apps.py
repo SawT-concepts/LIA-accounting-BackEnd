@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class PaystackConfig(AppConfig):
+class paystackConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'Paystack'
+    name = 'paystack'

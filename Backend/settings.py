@@ -3,18 +3,21 @@ from celery import Celery
 from pathlib import Path
 from datetime import timedelta
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f0dii8x23l6ci++_9(7_$memri5ks_cup+0hv&mkpx%7egoqpq'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 
 # Application definition
@@ -29,11 +32,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     # installed apps
-    'Authentication',
-    'Main',
-    'Api',
-    'Paystack',
+    'sps_authentication',
+    'sps_operations_account',
+    'sps_fees_payment_structure',
+    'sps_central_account',
+    'sps_notifications',
+    'sps_core',
+    'sps_generics',
+    'paystack',
     'channels',
+    'drf_yasg',
+    'background_tasks',
 ]
 
 MIDDLEWARE = [
@@ -48,7 +57,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'Backend.urls'
+ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
     {
@@ -66,48 +75,43 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Backend.wsgi.application'
+WSGI_APPLICATION = 'backend.wsgi.application'
 
-ASGI_APPLICATION = 'Backend.asgi.application'
+ASGI_APPLICATION = 'backend.asgi.application'
 
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [("redis://default:XPkJdlhNWgmUOUIbUgzDeMSYemmiMuZi@roundhouse.proxy.rlwy.net:11530")],
+            "hosts": [os.getenv('REDIS_URL')],
         },
     },
 }
 
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'phqueyhm',
-#         'USER': 'phqueyhm',
-#         'PASSWORD': 'XP69t1p2o3fT_8O1HSWpmNVDT8aEnaxU',
-#         'HOST': 'cornelius.db.elephantsql.com',
-#         'PORT': '5432',
-#     }
-# }
-
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'railway',
-        'USER': 'postgres',
-        'PASSWORD': 'UPSSxFHQphBByVxFErFVDlHtLqPViPiO',
-        'HOST': 'viaduct.proxy.rlwy.net',
-        'PORT': '26969',
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('DB_ENGINE'),
+            'NAME': os.path.join(BASE_DIR, os.getenv('DB_NAME')),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT'),
+        }
+    }
 
 # caches
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://default:NZpAOkwbhMeiihHhDICi@containers-us-west-90.railway.app:7278",
+        "LOCATION": os.getenv('REDIS_URL'),
     }
 }
 
@@ -170,8 +174,8 @@ CORS_ALLOW_HEADERS = ['*']
 
 
 # Authentication settings
-AUTH_USER_MODEL = 'Authentication.CustomUser'
-AUTHENTICATION_BACKENDS = ['Authentication.auth_backend.EmailBackend']
+AUTH_USER_MODEL = 'sps_authentication.CustomUser'
+AUTHENTICATION_BACKENDS = ['sps_authentication.auth_backend.EmailBackend']
 
 
 REST_FRAMEWORK = {
@@ -225,15 +229,15 @@ SIMPLE_JWT = {
 }
 
 # will change later
-CELERY_APP = "Background_Tasks"
-CELERY_BROKER_URL = "redis://default:NZpAOkwbhMeiihHhDICi@containers-us-west-90.railway.app:7278"
-CELERY_RESULT_BACKEND = "redis://default:NZpAOkwbhMeiihHhDICi@containers-us-west-90.railway.app:7278"
+CELERY_APP = "background_tasks"
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 
 
 # settings.py
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 1025
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT'))
 
 
 # celery for background task configuration
@@ -246,5 +250,5 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 
-PAYSTACK_SECRET_KEY = "sk_test_bfc102895076cd29d09ac8d6f4043f1c8e73481b"
-PAYSTACK_PUBLIC_KEY = "pk_test_b50c758a1c445e60e9782ecd6040dab28e142bb8"
+PAYSTACK_SECRET_KEY = os.getenv('PAYSTACK_SECRET_KEY')
+PAYSTACK_PUBLIC_KEY = os.getenv('PAYSTACK_PUBLIC_KEY')

@@ -11,7 +11,7 @@ SECRET_KEY = settings.PAYSTACK_SECRET_KEY
 
 def get_banks_from_paystack():
     '''
-        this function fetches the list of all the banks from Paystack database
+        this function fetches the list of all the banks from paystack database
     '''
     url = "https://api.paystack.co/bank"
     headers = {
@@ -38,7 +38,7 @@ def resolve_bank_account(account_number, bank_code):
         return response.json()
     else:
         return None
-    
+
 
 
 
@@ -55,8 +55,8 @@ def generate_paystack_id(instance, full_name_present=None):
 
     data = {
         "type": instance.bank.bank_type,
-        "name": f"{instance.name_of_reciever}" if full_name_present else f"{instance.first_name} {instance.last_name}",
-        "account_number": instance.account_number_of_reciever if full_name_present else instance.account_number,
+        "name": f"{instance.name_of_receiver}" if full_name_present else f"{instance.first_name} {instance.last_name}",
+        "account_number": instance.account_number_of_receiver if full_name_present else instance.account_number,
         "bank_code": instance.bank.bank_code,
         "currency": instance.bank.currency
     }
@@ -94,3 +94,27 @@ def verify_payment (transaction_refrence, customer_id):
 
     except requests.exceptions.RequestException as req_err:
         print(f"Error occurred: {req_err}")
+
+
+
+def create_paystack_structure(batch):
+    """
+    Create paystack transfer objects for each staff in a batch.
+
+    Parameters:
+    - batch: List representing a batch of staff.
+
+    Returns:
+    List of paystack transfer objects.
+    """
+    data = []
+    for single_batch_instance in batch:
+        paystack_transfer_object = {
+            "amount": single_batch_instance['salary_recieved'],
+            "reference": single_batch_instance['transaction_refrence'],
+            "reason": "Salary Payment",
+            "recipient": single_batch_instance['recipient_code']
+        }
+        data.append(paystack_transfer_object)
+
+    return data
