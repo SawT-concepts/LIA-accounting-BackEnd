@@ -88,44 +88,30 @@ CHANNEL_LAYERS = {
     },
 }
 
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'phqueyhm',
-#         'USER': 'phqueyhm',
-#         'PASSWORD': 'XP69t1p2o3fT_8O1HSWpmNVDT8aEnaxU',
-#         'HOST': 'cornelius.db.elephantsql.com',
-#         'PORT': '5432',
-#     }
-# }
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'railway',
-#         'USER': 'postgres',
-#         'PASSWORD': 'UPSSxFHQphBByVxFErFVDlHtLqPViPiO',
-#         'HOST': 'viaduct.proxy.rlwy.net',
-#         'PORT': '26969',
-#     }
-
-# }
-
-# SQLite configuration
-DATABASES = {
-    'default': {
-        'ENGINE': os.getenv('DB_ENGINE'),
-        'NAME': os.path.join(BASE_DIR, os.getenv('DB_NAME')),
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('DB_ENGINE'),
+            'NAME': os.path.join(BASE_DIR, os.getenv('DB_NAME')),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT'),
+        }
+    }
 
 # caches
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://default:NZpAOkwbhMeiihHhDICi@containers-us-west-90.railway.app:7278",
+        "LOCATION": os.getenv('REDIS_URL'),
     }
 }
 
