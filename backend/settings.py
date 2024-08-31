@@ -92,28 +92,28 @@ CHANNEL_LAYERS = {
     },
 }
 
-DATABASE_URL = os.getenv("DATABASE_URL")
 
-if os.getenv('PREVIEW_MODE') == 'True' or DEBUG:
+DATABASE_PREVIEW_URL = os.getenv("DATABASE_PREVIEW_URL")
+DATABASE_PROD_URL = os.getenv("DATABASE_PROD_URL")
+
+
+if os.getenv('PREVIEW_MODE') == 'True':
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_PREVIEW_URL, conn_max_age=600)
+    }
+
+elif os.getenv('PREVIEW_MODE') == 'False' and not DEBUG:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_PROD_URL, conn_max_age=600)
+    }
+
+else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
-else:
-    DATABASES = {
-        "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=1800),
-    }
-
-# caches
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": os.getenv('REDIS_URL'),
-    }
-}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
