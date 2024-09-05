@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from paystack.models import Bank
+from paystack.api.serializer import DedicatedAccountSerializer
+from paystack.models import Bank, DedicatedAccount
 from sps_central_account.models import CapitalAccount
 from sps_central_account.models.central_account_models import Receipts
 from sps_core.models import Grade, SchoolConfig, Staff, StaffType, Student
@@ -323,6 +324,10 @@ class StudentPaymentStatusDetailSerializer (serializers.ModelSerializer):
 
 
 class PaymentHistorySerializer (serializers.ModelSerializer):
+    virtual_account = serializers.SerializerMethodField()
+
+    def get_virtual_account(self, obj):
+        return DedicatedAccountSerializer(DedicatedAccount.objects.get(student=obj.student, is_active=True)).data
 
     class Meta:
         model = PaymentHistory
