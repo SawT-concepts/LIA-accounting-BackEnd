@@ -454,7 +454,7 @@ class ProcessFeePayment(APIView):
 
 
 
-class VerifyAndUpdatePayment(APIView):
+class GeneratePaymentDvaorSendExistingDVA(APIView):
     '''This api is responsible for initiating a transaction to paystack'''
 
     @swagger_auto_schema(
@@ -468,6 +468,8 @@ class VerifyAndUpdatePayment(APIView):
         }
     )
     def post(self, request, student_id):
+        #? this is shaky too. i mean its supposed to check if the student has a dedicated account and if they dont then create one. the dedicated account number is then used to manage all payments coming from this student. i want to verify how much they sent and handle all possible edge cases
+
         student = get_student_id_from_request(student_id)
         user_dedicated_account = DedicatedAccount.objects.get(student=student_id, is_active=True)
         if user_dedicated_account == None:
@@ -493,9 +495,10 @@ class VerifyAndUpdatePayment(APIView):
 
 
 
+
 class VerifyAndUpdatePayment(APIView):
     '''This api is responsible for verifying and updating the payment. It updates the student payment status too on the server'''
-
+    #? the query for this is still shaky tho. ill check it out later
     def post(self, request):
         reference = request.data.get('REFRENCE')
 
