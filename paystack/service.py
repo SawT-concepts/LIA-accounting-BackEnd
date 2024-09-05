@@ -5,12 +5,9 @@ import hashlib
 import hmac
 import requests
 from django.conf import settings
-from multiprocessing import Process
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from django.contrib.auth.models import User
 from background_tasks.tasks import handle_webhook_event_in_celery
-from paystack.models import DedicatedAccount
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 import logging
@@ -195,6 +192,7 @@ def handle_webhook_event(request):
     '''
     This function handles the webhook event for dedicated account assignment.
     '''
+    from paystack.models import DedicatedAccount
     try:
         data = request.data
         event_type = data.get('event')

@@ -5,6 +5,7 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 import dj_database_url
+import sentry_sdk
 
 load_dotenv()
 
@@ -240,6 +241,14 @@ EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT'))
 
+
+
+
+sentry_sdk.init(
+    dsn=os.getenv('SENTRY_DSN'),
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+)
 
 # celery for background task configuration
 #! (Check this later)
