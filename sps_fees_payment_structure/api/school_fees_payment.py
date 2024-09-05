@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 # from Background_Tasks.tasks import
 from django.shortcuts import get_object_or_404
+from paystack.models import DedicatedAccount
+from paystack.service import verify_customer_and_create_a_digital_virtual_account
 from sps_core.utils.main import get_student_id_from_request
 from sps_fees_payment_structure.models.fees_breakdown_models import FeesCategory
 from sps_operations_account.api.serializers import *
@@ -451,16 +453,52 @@ class ProcessFeePayment(APIView):
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class MakePaymentFromHistory (APIView):
+
+class GeneratePaymentDvaorSendExistingDVA(APIView):
     '''This api is responsible for initiating a transaction to paystack'''
 
-    def post(self, request):
-        pass
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('student_id', openapi.IN_PATH, description="Student ID", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: 'Payment history created successfully',
+            400: 'Bad Request',
+            500: 'Internal Server Error',
+        }
+    )
+    def post(self, request, student_id):
+        #? this is shaky too. i mean its supposed to check if the student has a dedicated account and if they dont then create one. the dedicated account number is then used to manage all payments coming from this student. i want to verify how much they sent and handle all possible edge cases
+
+        student = get_student_id_from_request(student_id)
+        user_dedicated_account = DedicatedAccount.objects.get(student=student_id, is_active=True)
+        if user_dedicated_account == None:
+            customer_details = {
+                "email": student.parent_email,
+                "first_name": student.first_name,
+                "middle_name": student.middle_name,
+                "last_name": student.last_name,
+                "phone": student.parent_phone_number,
+                "preferred_bank": "test-bank"
+            }
+
+            is_customer_verified = verify_customer_and_create_a_digital_virtual_account(customer_details)
+            if is_customer_verified:
+                return Response({"message": "Customer virtual account creation successful"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "Customer virtual account creation failed"}, status=status.HTTP_400_BAD_REQUEST)
+
+        #user has a dedicated account
+        payment_history = PaymentHistory.objects.get(student=student_id)
+        serializer = PaymentHistorySerializer(payment_history)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 
 class VerifyAndUpdatePayment(APIView):
     '''This api is responsible for verifying and updating the payment. It updates the student payment status too on the server'''
-
+    #? the query for this is still shaky tho. ill check it out later
     def post(self, request):
         reference = request.data.get('REFRENCE')
 
