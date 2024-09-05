@@ -1,7 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User
+from sps_core.models import Student
 from .service import get_banks_from_paystack
-import time
+
 
 # Create your models here.
 class Bank (models.Model):
@@ -33,10 +33,11 @@ class Bank (models.Model):
 
 
 class DedicatedAccount (models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     account_number = models.CharField(max_length=10)
     account_name = models.CharField(max_length=100)
     account_type = models.CharField(max_length=10)
+    is_active = models.BooleanField(default=True)
     bank_code = models.CharField(max_length=10)
     bank_name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)

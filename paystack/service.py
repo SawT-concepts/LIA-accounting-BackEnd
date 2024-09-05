@@ -15,6 +15,8 @@ from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 import logging
 
+from sps_core.models import Student
+
 logger = logging.getLogger(__name__)
 PUBLIC_KEY = settings.PAYSTACK_PUBLIC_KEY
 SECRET_KEY = settings.PAYSTACK_SECRET_KEY
@@ -131,18 +133,8 @@ def create_paystack_structure(batch):
     return data
 
 
-customer_details = {
-    "email": "test@example.com",
-    "first_name": "John",
-    "middle_name": "Doe",
-    "last_name": "Smith",
-    "phone": "08012345678",
-    "preferred_bank": "test-bank"
-}
 
-
-
-def verify_customer_and_create_a_digital_virtual_account(customer_details: dict) -> None:
+def verify_customer_and_create_a_digital_virtual_account(customer_details: dict) -> bool:
     '''
         This function verifies a customer and creates a digital virtual account for them
     '''
@@ -154,7 +146,6 @@ def verify_customer_and_create_a_digital_virtual_account(customer_details: dict)
     data = {
         "email": customer_details['email'],
         "first_name": customer_details['first_name'],
-        "middle_name": customer_details['middle_name'],
         "last_name": customer_details['last_name'],
         "phone": customer_details['phone'],
         "preferred_bank": customer_details['preferred_bank'],
@@ -166,8 +157,7 @@ def verify_customer_and_create_a_digital_virtual_account(customer_details: dict)
 
     response = requests.post(url, headers=headers, json=data)
 
-    print(response.status_code)
-    print(response.json())
+    return True if response.status_code == 200 else False
 
 
 def get_all_dedicated_accounts():
@@ -200,6 +190,7 @@ def verify_webhook_signature(request):
     return False
 
 
+
 def handle_webhook_event(request):
     '''
     This function handles the webhook event for dedicated account assignment.
@@ -210,16 +201,13 @@ def handle_webhook_event(request):
 
         if event_type == 'dedicatedaccount.assign.success' and 'data' in data:
             account_data = data['data'].get('dedicated_account')
-            email = data['data'].get('email')
-
-            if not account_data or not email:
+            student = Student.objects.get(parent_email=account_data.get('email'))
+            if not account_data:
                 raise ValueError("Invalid data in the webhook payload")
-
-            user = User.objects.get(email=email)
 
             with transaction.atomic():
                 DedicatedAccount.objects.create(
-                    user=user,
+                    student=student,
                     account_number=account_data.get('account_number'),
                     account_name=account_data.get('account_name'),
                     account_type=account_data.get('account_type'),
@@ -227,7 +215,7 @@ def handle_webhook_event(request):
                     bank_name=account_data.get('bank_name')
                 )
 
-            user_group_name = f"virtual_account_paystack_updates_{user.id}"
+            user_group_name = f"virtual_account_paystack_updates_{student.id}"
 
             # Notify via channels
             channel_layer = get_channel_layer()
@@ -242,13 +230,11 @@ def handle_webhook_event(request):
 
         elif event_type == 'dedicatedaccount.assign.failed' and 'data' in data:
             account_data = data['data'].get('dedicated_account')
-            email = data['data'].get('email')
-
-            if not account_data or not email:
+            student = Student.objects.get(parent_email=account_data.get('email'))
+            if not account_data:
                 raise ValueError("Invalid data in the webhook payload")
 
-            user = User.objects.get(email=email)
-            user_group_name = f"virtual_account_paystack_updates_{user.id}"
+            user_group_name = f"virtual_account_paystack_updates_{student.id}"
 
             # Notify via channels
             channel_layer = get_channel_layer()
@@ -262,7 +248,7 @@ def handle_webhook_event(request):
             )
         else:
             logger.info("Invalid event type")
-    except ObjectDoesNotExist:
-        logger.error(f"User with email {email} does not exist")
+    except ObjectDoesNotExist as e:
+        logger.error(f"Student with id does not exist: {e}")
     except Exception as e:
         logger.error(f"Error handling webhook event: {e}")
