@@ -97,12 +97,12 @@ DATABASE_PREVIEW_URL = os.getenv("DATABASE_PREVIEW_URL")
 DATABASE_PROD_URL = os.getenv("DATABASE_PROD_URL")
 
 
-if os.getenv('PREVIEW_MODE') == 'True':
+if os.getenv('PREVIEW_MODE') == 'True' and DEBUG == True:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_PREVIEW_URL, conn_max_age=600)
     }
 
-elif os.getenv('PREVIEW_MODE') == 'False' and not DEBUG:
+elif os.getenv('PREVIEW_MODE') == 'False' and DEBUG == False:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_PROD_URL, conn_max_age=600)
     }
