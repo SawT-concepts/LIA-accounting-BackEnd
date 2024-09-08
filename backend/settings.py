@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'sps_notifications',
     'sps_core',
     'sps_generics',
+    'sps_announcements',
     'paystack',
     'channels',
     'drf_yasg',
