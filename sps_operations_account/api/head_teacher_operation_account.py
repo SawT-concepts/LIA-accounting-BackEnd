@@ -15,7 +15,7 @@ from django.db import models
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from sps_operations_account.utils.main import get_user_school
+from sps_operations_account.utils.main import get_user_school, update_operations_account
 
 account_type: str = "PRINCIPAL"
 
@@ -149,10 +149,9 @@ class HeadTeacherModifyTransaction(APIView):
 
             transaction_instance.status = status
 
-            # operation_type = "SUBTRACT" if status == TransactionStatus.SUCCESS else "SAFE"
-            # update_operations_account(
-            #     transaction_instance.amount, user_school.id, operation_type)
-
+            operation_type = "SUBTRACT" if status == TransactionStatus.SUCCESS else "SAFE"
+            update_operations_account(
+                transaction_instance.amount, user_school.id, operation_type)
             transaction_instance.save()
 
             return Response(status=HTTP_200_OK)
@@ -183,6 +182,7 @@ class HeadTeacherBulkModifyTransaction(APIView):
         }
     )
     def post(self, request: Any, status: str) -> Response:
+        user_school = get_user_school(request.user)
         modified_status: str = status.upper()
         if modified_status not in TransactionStatus.values:
             return Response({"message": "Invalid status"}, status=HTTP_400_BAD_REQUEST)
@@ -206,7 +206,12 @@ class HeadTeacherBulkModifyTransaction(APIView):
                     continue
 
                 transaction_instance.status = modified_status
+                operation_type = "SUBTRACT" if modified_status == TransactionStatus.SUCCESS else "SAFE"
+                update_operations_account(
+                    transaction_instance.amount, user_school.id, operation_type)
                 transaction_instance.save()
+
+
 
             return Response({"message": "Transactions updated successfully"}, status=HTTP_200_OK)
 

@@ -85,7 +85,6 @@ class OperationsAccountTransactionRecord(models.Model):
                     "Both account number and receiver name must be provided for a Transfer transaction.")
 
             if not self.customer_transaction_id:
-                #generate customer transaction ID
                 transaction_id = generate_paystack_id(self, full_name_present=True)
                 self.customer_transaction_id  = transaction_id['data']
 
