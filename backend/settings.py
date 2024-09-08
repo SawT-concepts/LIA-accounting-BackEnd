@@ -5,6 +5,9 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 import dj_database_url
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 load_dotenv()
 
@@ -44,6 +47,7 @@ INSTALLED_APPS = [
     'channels',
     'drf_yasg',
     'background_tasks',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -232,6 +236,12 @@ CELERY_APP = "background_tasks"
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 
+
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET')
+)
 
 # settings.py
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
