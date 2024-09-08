@@ -15,7 +15,7 @@ from django.db import models
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from sps_operations_account.utils.main import get_user_school
+from sps_operations_account.utils.main import get_user_school, update_operations_account
 
 account_type: str = "PRINCIPAL"
 
@@ -149,10 +149,9 @@ class HeadTeacherModifyTransaction(APIView):
 
             transaction_instance.status = status
 
-            # operation_type = "SUBTRACT" if status == TransactionStatus.SUCCESS else "SAFE"
-            # update_operations_account(
-            #     transaction_instance.amount, user_school.id, operation_type)
-
+            operation_type = "SUBTRACT" if status == TransactionStatus.SUCCESS else "SAFE"
+            update_operations_account(
+                transaction_instance.amount, user_school.id, operation_type)
             transaction_instance.save()
 
             return Response(status=HTTP_200_OK)
