@@ -1,6 +1,10 @@
 from django.db import models
+<<<<<<< HEAD
+from .service import get_banks_from_paystack
+=======
 from sps_core.models import Student
 from paystack.service import get_banks_from_paystack
+>>>>>>> origin/develop
 
 
 # Create your models here.
@@ -29,6 +33,8 @@ class Bank (models.Model):
             )
             bank_instance.save()
             print(f"Added bank {bank['name']}")
+<<<<<<< HEAD
+=======
 
 
 
@@ -45,3 +51,4 @@ class DedicatedAccount (models.Model):
 
     def __str__(self):
         return self.account_number
+>>>>>>> origin/develop

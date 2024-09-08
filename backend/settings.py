@@ -5,7 +5,13 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 import dj_database_url
+<<<<<<< HEAD
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+=======
 import sentry_sdk
+>>>>>>> origin/develop
 
 load_dotenv()
 
@@ -41,10 +47,12 @@ INSTALLED_APPS = [
     'sps_notifications',
     'sps_core',
     'sps_generics',
+    'sps_announcements',
     'paystack',
     'channels',
     'drf_yasg',
     'background_tasks',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -100,12 +108,12 @@ DATABASE_PREVIEW_URL = os.getenv("DATABASE_PREVIEW_URL")
 DATABASE_PROD_URL = os.getenv("DATABASE_PROD_URL")
 
 
-if os.getenv('PREVIEW_MODE') == 'True':
+if os.getenv('PREVIEW_MODE') == 'True' and DEBUG == True:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_PREVIEW_URL, conn_max_age=600)
     }
 
-elif os.getenv('PREVIEW_MODE') == 'False' and not DEBUG:
+elif os.getenv('PREVIEW_MODE') == 'False' and DEBUG == False:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_PROD_URL, conn_max_age=600)
     }
@@ -235,6 +243,12 @@ CELERY_APP = "background_tasks"
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 
+
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET')
+)
 
 # settings.py
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
