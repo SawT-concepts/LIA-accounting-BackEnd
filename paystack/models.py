@@ -1,6 +1,6 @@
 from django.db import models
 from .service import get_banks_from_paystack
-import time
+
 
 # Create your models here.
 class Bank (models.Model):
@@ -13,7 +13,7 @@ class Bank (models.Model):
 
     def __str__(self):
         return self.name
-    
+
     @staticmethod
     def update_bank_from_paystack ():
         returned_banks = get_banks_from_paystack()
@@ -28,5 +28,3 @@ class Bank (models.Model):
             )
             bank_instance.save()
             print(f"Added bank {bank['name']}")
-
-
