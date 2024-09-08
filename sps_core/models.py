@@ -146,6 +146,8 @@ class Student(models.Model):
     first_name: str = models.CharField(max_length=50)
     last_name: str = models.CharField(max_length=50)
     other_names: str = models.CharField(max_length=50)
+    parent_email: str = models.EmailField(max_length=50, null=True, unique=True)
+    parent_phone_number: str = models.CharField(max_length=20, null=True)
     registration_number: str = models.CharField(max_length=60)
     school: School = models.ForeignKey("sps_core.school", on_delete=models.CASCADE)
     grade: Grade = models.ForeignKey("sps_core.Grade", on_delete=models.CASCADE)

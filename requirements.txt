@@ -47,6 +47,7 @@ pytz==2023.3.post1
 PyYAML==6.0.2
 redis==5.0.6
 requests==2.32.3
+sentry-sdk==2.13.0
 service-identity==24.1.0
 setuptools==70.0.0
 six==1.16.0

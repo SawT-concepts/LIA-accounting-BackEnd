@@ -1,4 +1,5 @@
 from django.db import models
+from paystack.models import DedicatedAccount
 from sps_core.configuration import *
 
 
@@ -24,11 +25,12 @@ class PaymentHistory (models.Model):
         ("RETRYING", "RETRYING"),
     )
 
-    student = models.ForeignKey("sps_core.Student",  on_delete=models.CASCADE)
+    student = models.ForeignKey("sps_core.Student", on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     date_time_initiated = models.DateTimeField()
     is_active = models.BooleanField(default=True)
     merchant_email = models.EmailField()
+    virtual_account = models.ForeignKey(DedicatedAccount, on_delete=models.CASCADE)
     school = models.ForeignKey("sps_core.school", on_delete=models.CASCADE)
 
     amount_debited = models.DecimalField(max_digits=10, decimal_places=2)

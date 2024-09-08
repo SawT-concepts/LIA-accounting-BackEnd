@@ -5,9 +5,13 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 import dj_database_url
+<<<<<<< HEAD
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+=======
+import sentry_sdk
+>>>>>>> origin/develop
 
 load_dotenv()
 
@@ -96,6 +100,8 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
 
 
 DATABASE_PREVIEW_URL = os.getenv("DATABASE_PREVIEW_URL")
@@ -249,6 +255,14 @@ EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT'))
 
+
+
+
+sentry_sdk.init(
+    dsn=os.getenv('SENTRY_DSN'),
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+)
 
 # celery for background task configuration
 #! (Check this later)
