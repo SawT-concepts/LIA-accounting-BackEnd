@@ -5,13 +5,10 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 import dj_database_url
-<<<<<<< HEAD
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-=======
 import sentry_sdk
->>>>>>> origin/develop
 
 load_dotenv()
 
