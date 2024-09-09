@@ -1,4 +1,5 @@
 from django.db import models
+from .service import get_banks_from_paystack
 from sps_core.models import Student
 from paystack.service import get_banks_from_paystack
 

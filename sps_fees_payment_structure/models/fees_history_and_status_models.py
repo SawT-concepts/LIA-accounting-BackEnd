@@ -30,7 +30,7 @@ class PaymentHistory (models.Model):
     date_time_initiated = models.DateTimeField()
     is_active = models.BooleanField(default=True)
     merchant_email = models.EmailField()
-    virtual_account = models.ForeignKey(DedicatedAccount, on_delete=models.CASCADE)
+    virtual_account = models.ForeignKey(DedicatedAccount, on_delete=models.CASCADE, null=True, blank=True)
     school = models.ForeignKey("sps_core.school", on_delete=models.CASCADE)
 
     amount_debited = models.DecimalField(max_digits=10, decimal_places=2)

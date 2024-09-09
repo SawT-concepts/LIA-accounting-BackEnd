@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from sps_core.configuration import *
 import hashlib
 from django.shortcuts import get_object_or_404
-
+from cloudinary.models import CloudinaryField
 
 """
 This module defines Django models for managing a school system, including schools, classes, staff types, and staff members.
@@ -44,7 +44,7 @@ class School(models.Model):
     address: str = models.CharField(max_length=100)
     email_address: str = models.EmailField(max_length=50)
     # django media settings
-    logo: str = models.ImageField()
+    logo: str = CloudinaryField('image', null=True, blank=True)
 
     def __str__(self) -> str:
         return self.name

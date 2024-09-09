@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
+from sps_announcements.api.views import AnnouncementList
 from sps_authentication.api.authentication import *
 from sps_central_account.api.school_accountant.class_fee_configuration import *
 from sps_central_account.api.school_accountant.main import *
@@ -39,7 +40,7 @@ urlpatterns = [
     path(f'{GENERIC}/fetch_banks', GetBanks.as_view(), name='fetch_banks'),
     path(f'{GENERIC}/verify_account_number', VerifyAccountNumber.as_view(),
          name='verify_account_number'),
-
+    path(f'{GENERIC}/get_announcements', AnnouncementList.as_view(), name='get_announcements'),
 
 
 #     # Operation Accountant cashbook

@@ -5,12 +5,16 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 import dj_database_url
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 import sentry_sdk
-
+import logging
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -41,10 +45,12 @@ INSTALLED_APPS = [
     'sps_notifications',
     'sps_core',
     'sps_generics',
+    'sps_announcements',
     'paystack',
     'channels',
     'drf_yasg',
     'background_tasks',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -95,22 +101,26 @@ CHANNEL_LAYERS = {
 
 
 
-
 DATABASE_PREVIEW_URL = os.getenv("DATABASE_PREVIEW_URL")
 DATABASE_PROD_URL = os.getenv("DATABASE_PROD_URL")
+print(os.getenv('PREVIEW_MODE'))
+print("debug: ", DEBUG == False)
 
 
-if os.getenv('PREVIEW_MODE') == 'True':
+if os.getenv('PREVIEW_MODE') and DEBUG == False:
+    logging.info('preview mode')
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_PREVIEW_URL, conn_max_age=600)
     }
 
-elif os.getenv('PREVIEW_MODE') == 'False' and not DEBUG:
+elif not os.getenv('PREVIEW_MODE') and DEBUG == False:
+    logging.info('Production mode')
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_PROD_URL, conn_max_age=600)
     }
 
 else:
+    logging.info('Development mode')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -156,7 +166,7 @@ USE_TZ = True
 # this path
 # i also installed pillow (pip install pillow) for images
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_files')
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -235,6 +245,12 @@ CELERY_APP = "background_tasks"
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 
+
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET')
+)
 
 # settings.py
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')

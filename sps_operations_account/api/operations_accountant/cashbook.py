@@ -278,19 +278,16 @@ class ViewAndModifyCashTransaction(viewsets.ModelViewSet):
             merged_data: Dict[str, Any] = {**self.get_serializer(instance).data, **request.data}
             serializer: CashTransactionWriteSerializer = self.get_serializer(instance, data=merged_data)
             if serializer.is_valid():
-                if serializer.validated_data["status"] == "PENDING_DELETE" or serializer.validated_data["status"] == "PENDING_EDIT":
+                if serializer.validated_data["status"] in ["CANCELLED", "PENDING_APPROVAL"]:
+                    if instance.status == "SUCCESS":
+                        return Response({"message": "Cannot edit a successful transaction."}, status=status.HTTP_400_BAD_REQUEST)
                     serializer.save()
                 else:
-                    instance = self.get_object()
                     serializer.save(status="PENDING_APPROVAL")
-                # initiate a notification here later to head teacher
-                #! reduce amount from operations account
                 return Response({"message": "Successfully modified"}, status=status.HTTP_200_OK)
-            print("edit errors", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except PermissionDenied:
             return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
-
 
 
     @swagger_auto_schema(auto_schema=None)

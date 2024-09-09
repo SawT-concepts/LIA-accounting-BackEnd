@@ -1,5 +1,5 @@
 from rest_framework.response import Response
-from rest_framework.status import *
+from rest_framework import status
 from rest_framework.views import APIView
 # from Background_Tasks.tasks import
 from django.core.exceptions import PermissionDenied
@@ -56,12 +56,12 @@ class GetFinancialInfoForAGrade(APIView):
                 "other_fees": OtherFeeCategorySerializer(other_fees, many=True).data,
             }
 
-            return Response(serialized_data, status=HTTP_200_OK)
+            return Response(serialized_data, status=status.HTTP_200_OK)
 
         except FeesCategory.DoesNotExist:
-            return Response({"message": "Fees category not found for the given grade"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": "Fees category not found for the given grade"}, status=status.HTTP_400_BAD_REQUEST)
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class CreateSchoolFeesCategory(APIView):
@@ -85,14 +85,14 @@ class CreateSchoolFeesCategory(APIView):
                 serializer.validated_data['category'] = category
                 serializer.save()
 
-                return Response({"message": "School fees category created successfully"}, status=HTTP_201_CREATED)
+                return Response({"message": "School fees category created successfully"}, status=status.HTTP_201_CREATED)
             else:
-                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         operation_description="Delete a school fees category",
@@ -102,14 +102,14 @@ class CreateSchoolFeesCategory(APIView):
         try:
             school_fees_category = SchoolFeesCategory.objects.get(id=category)
             school_fees_category.delete()
-            return Response({"message": "School fees category deleted successfully"}, status=HTTP_204_NO_CONTENT)
+            return Response({"message": "School fees category deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
         except SchoolFeesCategory.DoesNotExist:
-            return Response({"message": "School fees category not found"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": "School fees category not found"}, status=status.HTTP_400_BAD_REQUEST)
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class EditSchoolFeesCategory(APIView):
@@ -138,16 +138,16 @@ class EditSchoolFeesCategory(APIView):
             if serializer.is_valid():
                 # Update the SchoolFeesCategory instance with the new data
                 serializer.save()
-                return Response({"message": "School fees category updated successfully"}, status=HTTP_200_OK)
+                return Response({"message": "School fees category updated successfully"}, status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except SchoolFeesCategory.DoesNotExist:
-            return Response({"message": "School fees category not found"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": "School fees category not found"}, status=status.HTTP_400_BAD_REQUEST)
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class CreateOrDeleteBusFeeCategory(APIView):
     '''This is going to create or delete bus fee category'''
@@ -171,14 +171,14 @@ class CreateOrDeleteBusFeeCategory(APIView):
                 serializer.validated_data['category'] = category
                 serializer.save()
 
-                return Response({"message": "Bus fee category created successfully"}, status=HTTP_201_CREATED)
+                return Response({"message": "Bus fee category created successfully"}, status=status.HTTP_201_CREATED)
             else:
-                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         operation_description="Delete a bus fee category",
@@ -188,14 +188,14 @@ class CreateOrDeleteBusFeeCategory(APIView):
         try:
             bus_fee_category = BusFeeCategory.objects.get(id=category)
             bus_fee_category.delete()
-            return Response({"message": "Bus fee category deleted successfully"}, status=HTTP_204_NO_CONTENT)
+            return Response({"message": "Bus fee category deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
         except BusFeeCategory.DoesNotExist:
-            return Response({"message": "Bus fee category not found"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": "Bus fee category not found"}, status=status.HTTP_400_BAD_REQUEST)
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class EditBusFeeCategory(APIView):
     '''This api exist to edit a single instance of a bus fee. for example editing kuje moring bus fee'''
@@ -223,16 +223,16 @@ class EditBusFeeCategory(APIView):
             if serializer.is_valid():
                 # Update the BusFeeCategory instance with the new data
                 serializer.save()
-                return Response({"message": "Bus fee category updated successfully"}, status=HTTP_200_OK)
+                return Response({"message": "Bus fee category updated successfully"}, status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except BusFeeCategory.DoesNotExist:
-            return Response({"message": "Bus fee category not found"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": "Bus fee category not found"}, status=status.HTTP_400_BAD_REQUEST)
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class CreateOrDeleteUniformAndBooksFeeCategory(APIView):
     '''This API is used to create or delete a uniform and books fee category'''
@@ -256,14 +256,14 @@ class CreateOrDeleteUniformAndBooksFeeCategory(APIView):
                 serializer.validated_data['category'] = category
                 serializer.save()
 
-                return Response({"message": "Uniform and books fee category created successfully"}, status=HTTP_201_CREATED)
+                return Response({"message": "Uniform and books fee category created successfully"}, status=status.HTTP_201_CREATED)
             else:
-                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         operation_description="Delete a uniform and books fee category",
@@ -273,14 +273,14 @@ class CreateOrDeleteUniformAndBooksFeeCategory(APIView):
         try:
             uniform_and_books_category = UniformAndBooksFeeCategory.objects.get(id=category)
             uniform_and_books_category.delete()
-            return Response({"message": "Uniform and books fee category deleted successfully"}, status=HTTP_204_NO_CONTENT)
+            return Response({"message": "Uniform and books fee category deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
         except UniformAndBooksFeeCategory.DoesNotExist:
-            return Response({"message": "Uniform and books fee category not found"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": "Uniform and books fee category not found"}, status=status.HTTP_400_BAD_REQUEST)
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class EditUniformAndBooksFeeCategory(APIView):
     '''Edit the price of uniform and books fee category. for exmaple altering the price of labcoat'''
@@ -308,16 +308,16 @@ class EditUniformAndBooksFeeCategory(APIView):
             if serializer.is_valid():
                 # Update the UniformAndBooksFeeCategory instance with the new data
                 serializer.save()
-                return Response({"message": "Uniform and books fee category updated successfully"}, status=HTTP_200_OK)
+                return Response({"message": "Uniform and books fee category updated successfully"}, status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except UniformAndBooksFeeCategory.DoesNotExist:
-            return Response({"message": "Uniform and books fee category not found"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": "Uniform and books fee category not found"}, status=status.HTTP_400_BAD_REQUEST)
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class CreateOrDeleteOtherFeeCategory(APIView):
     '''Create a new other fee category'''
@@ -343,27 +343,27 @@ class CreateOrDeleteOtherFeeCategory(APIView):
                 serializer.validated_data['category'] = category
                 serializer.save()
 
-                return Response({"message": "Other fee category created successfully"}, status=HTTP_201_CREATED)
+                return Response({"message": "Other fee category created successfully"}, status=status.HTTP_201_CREATED)
             else:
-                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, category):
             try:
                 other_fee_category = OtherFeeCategory.objects.get(id=category)
                 other_fee_category.delete()
-                return Response({"message": "Other fee category deleted successfully"}, status=HTTP_204_NO_CONTENT)
+                return Response({"message": "Other fee category deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
             except OtherFeeCategory.DoesNotExist:
-                return Response({"message": "Other fee category not found"}, status=HTTP_400_BAD_REQUEST)
+                return Response({"message": "Other fee category not found"}, status=status.HTTP_400_BAD_REQUEST)
             except PermissionDenied:
-                return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+                return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
             except Exception as e:
-                return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+                return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class EditOtherFeeCategory(APIView):
     '''This makes editing other fee categories possible'''
@@ -387,13 +387,13 @@ class EditOtherFeeCategory(APIView):
             if serializer.is_valid():
                 # Update the OtherFeeCategory instance with the new data
                 serializer.save()
-                return Response({"message": "Other fee category updated successfully"}, status=HTTP_200_OK)
+                return Response({"message": "Other fee category updated successfully"}, status=status.HTTP_200_OK)
             else:
-                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except OtherFeeCategory.DoesNotExist:
-            return Response({"message": "Other fee category not found"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": "Other fee category not found"}, status=status.HTTP_400_BAD_REQUEST)
         except PermissionDenied:
-            return Response({"message": "Permission denied"}, status=HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Permission denied"}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            return Response({"message": f"An error occurred: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
