@@ -9,11 +9,12 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 import sentry_sdk
-
+import logging
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -100,22 +101,26 @@ CHANNEL_LAYERS = {
 
 
 
-
 DATABASE_PREVIEW_URL = os.getenv("DATABASE_PREVIEW_URL")
 DATABASE_PROD_URL = os.getenv("DATABASE_PROD_URL")
+print(os.getenv('PREVIEW_MODE'))
+print("debug: ", DEBUG == False)
 
 
-if os.getenv('PREVIEW_MODE') == 'True' and DEBUG == True:
+if os.getenv('PREVIEW_MODE') and DEBUG == False:
+    logging.info('preview mode')
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_PREVIEW_URL, conn_max_age=600)
     }
 
-elif os.getenv('PREVIEW_MODE') == 'False' and DEBUG == False:
+elif not os.getenv('PREVIEW_MODE') and DEBUG == False:
+    logging.info('Production mode')
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_PROD_URL, conn_max_age=600)
     }
 
 else:
+    logging.info('Development mode')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
