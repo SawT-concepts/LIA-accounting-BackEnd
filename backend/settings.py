@@ -103,24 +103,21 @@ CHANNEL_LAYERS = {
 
 DATABASE_PREVIEW_URL = os.getenv("DATABASE_PREVIEW_URL")
 DATABASE_PROD_URL = os.getenv("DATABASE_PROD_URL")
-print(os.getenv('PREVIEW_MODE'))
-print("debug: ", DEBUG == False)
 
 
-if os.getenv('PREVIEW_MODE') and DEBUG == False:
-    logging.info('preview mode')
+
+if os.getenv('PREVIEW_MODE') == 'True' and DEBUG == False:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_PREVIEW_URL, conn_max_age=600)
     }
 
-elif not os.getenv('PREVIEW_MODE') and DEBUG == False:
-    logging.info('Production mode')
+elif os.getenv('PREVIEW_MODE') == 'False' and DEBUG == False:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_PROD_URL, conn_max_age=600)
     }
 
 else:
-    logging.info('Development mode')
+    print('Development mode')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
