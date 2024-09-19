@@ -37,11 +37,11 @@ class PaymentHistory (models.Model):
     payment_status = models.CharField(max_length=20, choices=Status_choice)
 
 
-    receipt_id = models.CharField(max_length=20)
-    paystack_reference = models.CharField(max_length=50)
+    receipt_id = models.CharField(max_length=20, null=True, blank=True, unique=True)
+    paystack_reference = models.CharField(max_length=50, null=True, blank=True, unique=True)
 
 
-    breakdowns = models.JSONField()
+    breakdowns = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.student} payment reciept'

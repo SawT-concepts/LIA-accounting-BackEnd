@@ -254,7 +254,7 @@ class PayrollWriteSerializer (serializers.ModelSerializer):
 class StudentSerializer (serializers.ModelSerializer):
     class Meta:
         model = Student
-        fields = ("first_name", "last_name", "other_names")
+        fields = ("first_name", "last_name", "other_names", "registration_number")
 
 
 class PaymentStatusSerializer (serializers.ModelSerializer):
@@ -324,21 +324,26 @@ class StudentPaymentStatusDetailSerializer (serializers.ModelSerializer):
 
 
 class PaymentHistorySerializer (serializers.ModelSerializer):
-    virtual_account = serializers.SerializerMethodField()
+    student = serializers.SerializerMethodField()
 
-    def get_virtual_account(self, obj):
-        return DedicatedAccountSerializer(DedicatedAccount.objects.get(student=obj.student, is_active=True)).data
+    def get_student(self, obj):
+        return StudentSerializer(Student.objects.get(id=obj.student.id)).data
+
 
     class Meta:
         model = PaymentHistory
-        fields = ("name", "amount_debited", "date_time_initiated", "id")
+        fields = ("name", "student", "amount_debited", "date_time_initiated", "id", "receipt_id")
 
 
 class PaymentHistoryDetailSerializer (serializers.ModelSerializer):
+    student = serializers.SerializerMethodField()
+
+    def get_student(self, obj):
+        return StudentSerializer(Student.objects.get(id=obj.student.id)).data
 
     class Meta:
         model = PaymentHistory
-        fields = "__all__"
+        fields = ("name", "amount_debited", "date_time_initiated", "id", "breakdowns", "receipt_id", "paystack_reference", "payment_status", "merchant_email", "student")
 
 
 class CreateStudentSerializer (serializers.ModelSerializer):

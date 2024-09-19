@@ -6,6 +6,7 @@ from sps_announcements.api.views import AnnouncementList
 from sps_authentication.api.authentication import *
 from sps_central_account.api.school_accountant.class_fee_configuration import *
 from sps_central_account.api.school_accountant.main import *
+from sps_central_account.api.school_accountant.reciepts import GetAllReceipts, GetLatestReceipts, GetReceiptByID
 from sps_central_account.api.school_accountant.student_and_class import *
 from sps_fees_payment_structure.api.school_fees_payment import *
 from sps_generics.api.main import *
@@ -156,6 +157,9 @@ urlpatterns = [
     path(f'{ACCOUNTANT}/get_all_students',
          GetAllStudents.as_view(), name="get_all_students"),
 
+    path(f'{ACCOUNTANT}/get_all_receipts', GetAllReceipts.as_view(), name="get_all_receipts"),
+    path(f'{ACCOUNTANT}/get_latest_receipts', GetLatestReceipts.as_view(), name="get_latest_receipts"),
+    path(f'{ACCOUNTANT}/get_receipt_by_id/<str:receipt_id>', GetReceiptByID.as_view(), name="get_receipt_by_id"),
 
     path(f'{ACCOUNTANT}/get_financial_info_for_class/<str:grade_id>/<str:term>',
          GetFinancialInfoForAGrade.as_view(), name="get_financial_info_for_class")
